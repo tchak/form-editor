@@ -8,6 +8,7 @@ export enum FieldType {
   radio = 'radio',
   number = 'number',
   section = 'section',
+  logic = 'logic',
 }
 
 export interface FieldSchema {
@@ -19,6 +20,56 @@ export interface FieldSchema {
   required?: boolean;
   options?: string[];
   content?: FieldSchema[];
+  logic?: FieldLogic;
+}
+
+export enum BinaryOperator {
+  IS = 'IS',
+  IS_NOT = 'IS_NOT',
+  IS_EMPTY = 'IS_EMPTY',
+  CONTAINS = 'CONTAINS',
+  CONTAINS_NOT = 'CONTAINS_NOT',
+  IS_NOT_EMPTY = 'IS_NOT_EMPTY',
+  IS_BEFORE = 'IS_BEFORE',
+  IS_AFTER = 'IS_AFTER',
+  STARTS_WITH = 'STARTS_WITH',
+  ENDS_WITH = 'ENDS_WITH',
+}
+
+export enum LogicalOperator {
+  AND = 'AND',
+  OR = 'OR',
+}
+
+export type BinaryExpressionValue = string | number | boolean | Date | string[];
+
+export interface BinaryExpression {
+  operator: BinaryOperator;
+  id: string;
+  value: BinaryExpressionValue;
+}
+
+export interface LogicalExpression {
+  operator: LogicalOperator;
+  left: WhenExpression;
+  right: WhenExpression;
+}
+
+export type WhenExpression = BinaryExpression | LogicalExpression;
+
+export enum ThenAction {
+  hide = 'hide',
+  require = 'require',
+}
+
+export interface ThenExpression {
+  action: ThenAction;
+  id?: string;
+}
+
+export interface FieldLogic {
+  when: WhenExpression;
+  then: ThenExpression[];
 }
 
 type PatchCallback = (field: Field | Section) => void;
@@ -30,6 +81,14 @@ interface FieldSettings {
   unit?: string;
   required?: boolean;
   options?: string[];
+  logic?: FieldLogic;
+}
+
+export function isUnaryOperator(operator: BinaryOperator) {
+  return (
+    operator == BinaryOperator.IS_EMPTY ||
+    operator == BinaryOperator.IS_NOT_EMPTY
+  );
 }
 
 export function isSection(field: Field | Section): field is Section {
@@ -56,6 +115,7 @@ export class Field {
       required: field.required,
       options: field.options,
       unit: field.unit,
+      logic: field.logic,
     };
     this.#emitter = emitter ?? parent?.emitter;
     this.#parent = parent;
@@ -86,6 +146,22 @@ export class Field {
       return this.#settings.options ?? [];
     }
     return [];
+  }
+
+  get optionsWithBlank() {
+    if (this.type == FieldType.radio) {
+      return this.required ? this.options : ['', ...this.options];
+    } else if (this.type == FieldType.checkbox) {
+      return this.required ? ['true', 'false'] : ['', 'true', 'false'];
+    }
+    return [];
+  }
+
+  get logic(): FieldLogic {
+    if (this.type == FieldType.logic && this.#settings.logic) {
+      return this.#settings.logic;
+    }
+    throw new TypeError(`Field #${this.id} is not of type logic`);
   }
 
   get emitter(): FieldEmitter {
@@ -123,6 +199,65 @@ export class Field {
     return '';
   }
 
+  get displayLabel() {
+    if (this.label) {
+      return this.label;
+    }
+    return `Champ "${this.type}" sans nom`;
+  }
+
+  get defaultValue() {
+    switch (this.type) {
+      case FieldType.checkbox:
+      case FieldType.radio:
+        return this.optionsWithBlank[0] ?? '';
+      case FieldType.number:
+        return 0;
+      default:
+        return '';
+    }
+  }
+
+  get siblings() {
+    return this.parent.content.filter(
+      ({ id, type }) => id != this.id && type != FieldType.logic
+    );
+  }
+
+  get siblingFields() {
+    return this.parent.content.filter(
+      ({ id, type }) =>
+        id != this.id && type != FieldType.logic && type != FieldType.section
+    );
+  }
+
+  get operators() {
+    const base = [
+      BinaryOperator.IS,
+      BinaryOperator.IS_NOT,
+      BinaryOperator.IS_EMPTY,
+      BinaryOperator.IS_NOT_EMPTY,
+    ];
+    switch (this.type) {
+      case FieldType.text:
+      case FieldType.longtext:
+        return [
+          ...base,
+          BinaryOperator.CONTAINS,
+          BinaryOperator.CONTAINS_NOT,
+          BinaryOperator.STARTS_WITH,
+          BinaryOperator.ENDS_WITH,
+        ];
+      default:
+        return base;
+    }
+  }
+
+  get canAddLogic() {
+    const next = this.parent.content[this.index + 1];
+    return this.type != FieldType.section && next?.type != FieldType.logic;
+  }
+
   on(event: 'patch', cb: PatchCallback) {
     return this.emitter.on(event, cb);
   }
@@ -151,6 +286,8 @@ export class Field {
       description: this.description,
       options: this.options,
       required: this.required,
+      unit: this.#settings.unit,
+      logic: this.#settings.logic,
     };
   }
 }

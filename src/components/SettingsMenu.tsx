@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { HiOutlineCog, HiOutlineChevronRight } from 'react-icons/hi';
+import { HiOutlineCog } from 'react-icons/hi';
 import { Menu, Switch } from '@headlessui/react';
 
-import { Field, Section } from '../tree';
+import { BinaryOperator, Field, FieldType, Section, ThenAction } from '../tree';
 
 export function SettingsMenu({ field }: { field: Field | Section }) {
   const [required, setRequired] = useState(field.required);
@@ -16,6 +16,22 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
     field.update({ description: description ? '' : null });
   };
 
+  const addLogic = () => {
+    const logic = new Field({
+      type: FieldType.logic,
+      label: `Une condition pour « ${field.displayLabel} »`,
+      logic: {
+        when: {
+          operator: BinaryOperator.IS,
+          id: field.id,
+          value: field.defaultValue,
+        },
+        then: [{ action: ThenAction.hide }],
+      },
+    });
+    field.parent.insert(logic, field.index + 1);
+  };
+
   return (
     <Menu>
       <div className="relative inline-block text-left">
@@ -27,10 +43,7 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
         <Menu.Items className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
           <div className="py-1" role="none">
             <Menu.Item>
-              <div
-                className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                role="menuitem"
-              >
+              <div className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                 <Toggle
                   label="Description"
                   checked={description}
@@ -39,10 +52,7 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
               </div>
             </Menu.Item>
             <Menu.Item>
-              <div
-                className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                role="menuitem"
-              >
+              <div className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                 <Toggle
                   label="Obligatoire"
                   checked={required}
@@ -50,18 +60,17 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
                 />
               </div>
             </Menu.Item>
-            <Menu.Item>
-              <button
-                type="button"
-                className="inline-flex items-center text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                role="menuitem"
-              >
-                <span className="flex-1">Logique conditionnelle</span>
-                <span className="">
-                  <HiOutlineChevronRight />
-                </span>
-              </button>
-            </Menu.Item>
+            {field.canAddLogic && (
+              <Menu.Item>
+                <button
+                  type="button"
+                  className="inline-flex items-center text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={addLogic}
+                >
+                  <span className="flex-1">Logique conditionnelle</span>
+                </button>
+              </Menu.Item>
+            )}
           </div>
         </Menu.Items>
       </div>

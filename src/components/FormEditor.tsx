@@ -10,6 +10,7 @@ import { Field, Section, FieldType, isSection } from '../tree';
 import { usePage } from '../hooks';
 import { SettingsMenu } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
+import { FieldLogic } from './FieldLogic';
 
 export function FormEditor() {
   const page = usePage();
@@ -18,7 +19,6 @@ export function FormEditor() {
   return (
     <div>
       <div>
-        {/* <h1 className="p-3 font-bold text-4xl">Ma démarche</h1> */}
         <input
           className="text-blue-500 border-none font-bold text-4xl pl-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded"
           type="text"
@@ -30,8 +30,8 @@ export function FormEditor() {
       </div>
       <div className="mt-5">
         <ul className="pb-32" ref={drop}>
-          {page.content.map((field, index) => (
-            <FormField index={index} key={field.id} field={field} />
+          {page.content.map((field) => (
+            <FormField key={field.id} field={field} />
           ))}
         </ul>
       </div>
@@ -39,7 +39,7 @@ export function FormEditor() {
   );
 }
 
-function FormField({ field, index }: { field: Field; index: number }) {
+function FormField({ field }: { field: Field }) {
   const [showAddField, setShowAddField] = useState(false);
   const [label, setLabel] = useState(field.label);
   const [description, setDescription] = useState(field.description);
@@ -91,7 +91,7 @@ function FormField({ field, index }: { field: Field; index: number }) {
         ref={drop}
         className="flex text-lg text-gray-600 w-28 pt-3 opacity-0 group-hover:opacity-100 transition duration-150 ease-in-out"
       >
-        <SettingsMenu field={field} />
+        {field.type != FieldType.logic && <SettingsMenu field={field} />}
         <button
           type="button"
           className="hover:bg-gray-200 rounded p-1 h-6 w-6"
@@ -192,9 +192,15 @@ function FieldInput({ field }: { field: Field | Section }) {
   const [selected, setSelected] = useState(options[0] ?? '');
   const [, drop] = useDrop(() => ({ accept: 'Field' }));
 
-  const saveOptions = (options: string[], option: string, index: number) => {
-    options = [...options];
+  const saveOptions = (index: number, option: string) => {
+    const options = [...field.options];
     options.splice(index, 1, option);
+    setOptions(options);
+    field.update({ options });
+  };
+  const removeOption = (index: number) => {
+    const options = [...field.options];
+    options.splice(index, 1);
     setOptions(options);
     field.update({ options });
   };
@@ -244,9 +250,15 @@ function FieldInput({ field }: { field: Field | Section }) {
                 className="ml-2"
                 value={option}
                 onChange={({ currentTarget: { value } }) =>
-                  saveOptions(options, value, index)
+                  saveOptions(index, value)
                 }
               />
+              <button
+                className="hover:text-red-600 text-lg opacity-0 hover:opacity-100 p-1"
+                onClick={() => removeOption(index)}
+              >
+                <HiOutlineTrash />
+              </button>
             </div>
           ))}
         </div>
@@ -260,12 +272,14 @@ function FieldInput({ field }: { field: Field | Section }) {
           type="number"
         />
       );
+    case FieldType.logic:
+      return <FieldLogic field={field} />;
     default:
       if (isSection(field)) {
         return (
           <ul ref={drop}>
-            {field.content.map((field, index) => (
-              <FormField index={index} key={field.id} field={field} />
+            {field.content.map((field) => (
+              <FormField key={field.id} field={field} />
             ))}
             <SectionInsert field={field} />
           </ul>
