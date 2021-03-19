@@ -3,13 +3,13 @@ import {
   HiOutlineDotsVertical,
   HiOutlineTrash,
   HiOutlinePlus,
-  HiOutlineCog,
-  HiOutlineChevronRight,
 } from 'react-icons/hi';
 import { useDrag, useDrop } from 'react-dnd';
 
-import { Field, Section, FieldType, FieldSettings, isSection } from '../tree';
+import { Field, Section, FieldType, isSection } from '../tree';
 import { usePage } from '../hooks';
+import { SettingsMenu } from './SettingsMenu';
+import { AddFieldModal } from './AddFieldModal';
 
 export function FormEditor() {
   const page = usePage();
@@ -40,8 +40,11 @@ export function FormEditor() {
 }
 
 function FormField({ field, index }: { field: Field; index: number }) {
+  const [showAddField, setShowAddField] = useState(false);
   const [label, setLabel] = useState(field.label);
   const [description, setDescription] = useState(field.description);
+  const openAddField = () => setShowAddField(true);
+  const closeAddField = () => setShowAddField(false);
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -78,7 +81,7 @@ function FormField({ field, index }: { field: Field; index: number }) {
         ref={drop}
         className="flex text-lg text-gray-600 w-28 pt-3 opacity-0 group-hover:opacity-100 transition duration-150 ease-in-out"
       >
-        <SettingsMenu settings={field.settings ?? {}} />
+        <SettingsMenu settings={field.settings} />
         <button
           type="button"
           className="hover:bg-gray-200 rounded p-1 h-6 w-6"
@@ -87,13 +90,25 @@ function FormField({ field, index }: { field: Field; index: number }) {
           <HiOutlineTrash />
         </button>
 
-        <button type="button" className="hover:bg-gray-200 rounded p-1 h-6 w-6">
+        <button
+          type="button"
+          className="hover:bg-gray-200 rounded p-1 h-6 w-6"
+          onClick={openAddField}
+        >
           <HiOutlinePlus />
         </button>
 
         <div ref={drag} className="hover:bg-gray-200 rounded p-1 h-6 w-6">
           <HiOutlineDotsVertical />
         </div>
+
+        <AddFieldModal
+          show={showAddField}
+          done={(item) => {
+            if (item) field.parent.insert(item, field.index + 1);
+            closeAddField();
+          }}
+        />
       </div>
       <div
         className={`flex flex-col flex-grow ${
@@ -233,84 +248,4 @@ function FieldInput({ field }: { field: Field | Section }) {
       }
       return null;
   }
-}
-
-function SettingsMenu({ settings }: { settings: FieldSettings }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="relative inline-block text-left">
-      <div>
-        <button
-          type="button"
-          className="hover:bg-gray-200 rounded p-1 h-6 w-6"
-          id="options-menu"
-          aria-expanded="true"
-          aria-haspopup="true"
-          onClick={() => setOpen(!open)}
-        >
-          <span className="sr-only">Open options</span>
-          <HiOutlineCog />
-        </button>
-      </div>
-
-      {open && (
-        <div
-          className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
-          role="menu"
-          aria-orientation="vertical"
-          aria-labelledby="options-menu"
-        >
-          <div className="py-1" role="none">
-            <div
-              className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              role="menuitem"
-            >
-              <span className="flex-1">Description</span>
-              <Toggle checked={false} />
-            </div>
-            <div
-              className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-              role="menuitem"
-            >
-              <span className="flex-1">Obligatoire</span>
-              <Toggle checked={settings.required ?? false} />
-            </div>
-            <button
-              type="button"
-              className="inline-flex items-center text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              role="menuitem"
-            >
-              <span className="flex-1">Logique conditionnelle</span>
-              <span className="">
-                <HiOutlineChevronRight />
-              </span>
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Toggle({ checked }: { checked: boolean }) {
-  const [enabled, setEnabled] = useState(checked);
-  return (
-    <button
-      type="button"
-      className={`${
-        enabled ? 'bg-blue-500' : 'bg-gray-200'
-      } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-      aria-pressed="false"
-      onClick={() => setEnabled(!enabled)}
-    >
-      <span className="sr-only">Use setting</span>
-      <span
-        aria-hidden="true"
-        className={`${
-          enabled ? 'translate-x-5' : 'translate-x-0'
-        } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-      ></span>
-    </button>
-  );
 }

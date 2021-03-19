@@ -1,4 +1,5 @@
 import { createNanoEvents, Emitter } from 'nanoevents';
+import { v4 as uuid } from 'uuid';
 
 export enum FieldType {
   text = 'text',
@@ -10,7 +11,7 @@ export enum FieldType {
 }
 
 export interface FieldSchema {
-  id: string;
+  id?: string;
   type: FieldType;
   label: string;
   description?: string;
@@ -42,18 +43,18 @@ export class Field {
   #description?: string;
   #settings?: FieldSettings;
   #options?: string[];
-  #emitter: FieldEmitter;
-  parent?: Section;
+  #emitter?: FieldEmitter;
+  #parent?: Section;
 
   constructor(field: FieldSchema, parent?: Section, emitter?: FieldEmitter) {
-    this.#id = field.id;
+    this.#id = field.id ?? uuid();
     this.#type = field.type;
     this.#label = field.label;
     this.#description = field.description;
-    this.#emitter = emitter ?? createNanoEvents();
     this.#settings = field.settings;
     this.#options = field.options;
-    this.parent = parent;
+    this.#emitter = emitter ?? parent?.emitter;
+    this.#parent = parent;
   }
 
   get id() {
@@ -83,33 +84,44 @@ export class Field {
     return [];
   }
 
-  get emitter() {
-    return this.#emitter;
+  get emitter(): FieldEmitter {
+    if (this.#emitter) {
+      return this.#emitter;
+    }
+    return this.parent.emitter;
+  }
+
+  get parent() {
+    if (this.#parent) {
+      return this.#parent;
+    }
+    throw new Error(`Orphaned field #${this.id}`);
+  }
+
+  set parent(parent: Section) {
+    this.#parent = parent;
   }
 
   get index() {
-    if (this.parent) {
-      return this.parent.content.indexOf(this);
+    if (this.#parent) {
+      return this.#parent.content.indexOf(this);
     }
     return -1;
   }
 
   on(event: 'patch', cb: PatchCallback) {
-    return this.#emitter.on(event, cb);
+    return this.emitter.on(event, cb);
   }
 
   remove() {
-    if (this.parent) {
-      this.parent.content.splice(this.index, 1);
-      this.parent = undefined;
-      this.#emitter.emit('patch', this);
-    }
+    const parent = this.parent;
+    parent.content.splice(this.index, 1);
+    this.#parent = undefined;
+    parent.emitter.emit('patch', parent);
   }
 
   moveAfter(field: Field | Section) {
-    if (this.parent && field.parent) {
-      field.parent.insert(this, field.index);
-    }
+    field.parent.insert(this, field.index);
   }
 }
 
@@ -132,9 +144,8 @@ export class Section extends Field {
   }
 
   insert(field: Field | Section, atIndex: number) {
-    if (field.parent) {
+    if (field.index != -1) {
       field.parent.content.splice(field.index, 1);
-      field.parent = undefined;
     }
     this.content.splice(atIndex, 0, field);
     field.parent = this;
@@ -155,5 +166,11 @@ export class Section extends Field {
         return field;
       }
     }
+  }
+}
+
+export class Page extends Section {
+  constructor(field: FieldSchema) {
+    super(field, undefined, createNanoEvents());
   }
 }

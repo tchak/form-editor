@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { FieldSchema, FieldType, Section } from './tree';
+import { FieldSchema, FieldType, Page } from './tree';
 
 const defaultPage: FieldSchema = {
   id: '0',
@@ -63,8 +63,8 @@ const defaultPage: FieldSchema = {
   ],
 };
 
-export function usePage(): Section {
-  const root = useMemo(() => new Section(defaultPage), []);
+export function usePage(): Page {
+  const root = useMemo(() => new Page(defaultPage), []);
   const [render, setRender] = useState(0);
 
   useEffect(() =>
