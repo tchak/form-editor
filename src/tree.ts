@@ -123,6 +123,27 @@ export class Field {
   moveAfter(field: Field | Section) {
     field.parent.insert(this, field.index);
   }
+
+  update({ label, description }: { label?: string; description?: string }) {
+    if (label) {
+      this.#label = label;
+    }
+    if (description) {
+      this.#description = description;
+    }
+    this.emitter.emit('patch', this);
+  }
+
+  toJSON(): FieldSchema {
+    return {
+      id: this.id,
+      type: this.type,
+      label: this.label,
+      description: this.description,
+      options: this.options,
+      settings: this.settings,
+    };
+  }
 }
 
 export class Section extends Field {
@@ -166,6 +187,13 @@ export class Section extends Field {
         return field;
       }
     }
+  }
+
+  toJSON(): FieldSchema {
+    return {
+      ...super.toJSON(),
+      content: this.content.map((field) => field.toJSON()),
+    };
   }
 }
 

@@ -3,12 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { FieldSchema, FieldType, Page } from './tree';
 
 const defaultPage: FieldSchema = {
-  id: '0',
   type: FieldType.section,
   label: 'Ma démarche',
   content: [
     {
-      id: '1',
       type: FieldType.section,
       label: 'Qui êtes-vous ?',
       description: '',
@@ -17,7 +15,6 @@ const defaultPage: FieldSchema = {
       },
       content: [
         {
-          id: '2',
           label: 'Nom',
           description: 'Votre nom',
           type: FieldType.text,
@@ -26,7 +23,6 @@ const defaultPage: FieldSchema = {
           },
         },
         {
-          id: '3',
           label: 'Prénom',
           type: FieldType.text,
           settings: {
@@ -36,7 +32,6 @@ const defaultPage: FieldSchema = {
       ],
     },
     {
-      id: '4',
       label: 'Étes vous islamo-gauchiste ?',
       type: FieldType.checkbox,
       settings: {
@@ -44,7 +39,6 @@ const defaultPage: FieldSchema = {
       },
     },
     {
-      id: '5',
       label: 'À quel point ?',
       type: FieldType.radio,
       options: ['Un peu', 'Beaucoup', 'Complètement'],
@@ -53,7 +47,6 @@ const defaultPage: FieldSchema = {
       },
     },
     {
-      id: '6',
       label: 'Racontez nous votre vie !',
       type: FieldType.longtext,
       settings: {
@@ -63,12 +56,38 @@ const defaultPage: FieldSchema = {
   ],
 };
 
+const FORM_EDITOR_KEY = 'form-editor-schema';
+
+function getDefaultPage(): FieldSchema {
+  const json = localStorage.getItem(FORM_EDITOR_KEY);
+  if (json) {
+    return JSON.parse(json);
+  }
+  return defaultPage;
+}
+
+let currentPage: FieldSchema | undefined;
+function savePage(page: FieldSchema) {
+  currentPage = page;
+  requestAnimationFrame(() =>
+    currentPage
+      ? localStorage.setItem(FORM_EDITOR_KEY, JSON.stringify(currentPage))
+      : false
+  );
+}
+
+function resetPage() {
+  currentPage = undefined;
+  localStorage.removeItem(FORM_EDITOR_KEY);
+}
+
 export function usePage(): Page {
-  const root = useMemo(() => new Page(defaultPage), []);
+  const root = useMemo(() => new Page(getDefaultPage()), []);
   const [render, setRender] = useState(0);
 
   useEffect(() =>
     root.on('patch', () => {
+      savePage(root.toJSON());
       setRender(render + 1);
     })
   );

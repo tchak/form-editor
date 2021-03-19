@@ -43,8 +43,17 @@ function FormField({ field, index }: { field: Field; index: number }) {
   const [showAddField, setShowAddField] = useState(false);
   const [label, setLabel] = useState(field.label);
   const [description, setDescription] = useState(field.description);
+
   const openAddField = () => setShowAddField(true);
   const closeAddField = () => setShowAddField(false);
+  const saveLabel = (label: string) => {
+    setLabel(label);
+    field.update({ label });
+  };
+  const saveDescription = (description: string) => {
+    setDescription(description);
+    field.update({ description });
+  };
 
   const [{ isDragging }, drag, preview] = useDrag(
     () => ({
@@ -129,9 +138,10 @@ function FormField({ field, index }: { field: Field; index: number }) {
             } flex-auto text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
             autoCorrect="off"
             autoComplete="off"
+            spellCheck="false"
             type="text"
             value={label}
-            onChange={({ currentTarget: { value } }) => setLabel(value)}
+            onChange={({ currentTarget: { value } }) => saveLabel(value)}
           />
           {field.settings?.required && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-800">
@@ -145,9 +155,10 @@ function FormField({ field, index }: { field: Field; index: number }) {
             className="text-black border-none p-0 mb-2 text-xs focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
             rows={1}
             value={description}
-            onChange={({ currentTarget: { value } }) => setDescription(value)}
+            onChange={({ currentTarget: { value } }) => saveDescription(value)}
             autoCorrect="off"
             autoComplete="off"
+            spellCheck="false"
           ></textarea>
         )}
         <FieldInput field={field} />
