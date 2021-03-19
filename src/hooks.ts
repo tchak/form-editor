@@ -47,7 +47,7 @@ const defaultPage: FieldSchema = {
       id: '5',
       label: 'À quel point ?',
       type: FieldType.radio,
-      options: ['Un peu', 'Beucoup', 'Complètement'],
+      options: ['Un peu', 'Beaucoup', 'Complètement'],
       settings: {
         required: false,
       },
