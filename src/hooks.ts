@@ -1,124 +1,77 @@
-import { useCallback, useState } from 'react';
-import update from 'immutability-helper';
+import { useEffect, useMemo, useState } from 'react';
 
-export enum FieldType {
-  text,
-  longtext,
-  checkbox,
-  radio,
-  number,
-}
+import { FieldSchema, FieldType, Section } from './tree';
 
-export interface Field {
-  id: string;
-  type: FieldType;
-  label: string;
-  description?: string;
-  unit?: string;
-  options?: string[];
-  settings: FieldSettings;
-}
+const defaultPage: FieldSchema = {
+  id: '0',
+  type: FieldType.section,
+  label: 'Ma démarche',
+  content: [
+    {
+      id: '1',
+      type: FieldType.section,
+      label: 'Qui êtes-vous ?',
+      description: '',
+      settings: {
+        required: false,
+      },
+      content: [
+        {
+          id: '2',
+          label: 'Nom',
+          description: 'Votre nom',
+          type: FieldType.text,
+          settings: {
+            required: false,
+          },
+        },
+        {
+          id: '3',
+          label: 'Prénom',
+          type: FieldType.text,
+          settings: {
+            required: false,
+          },
+        },
+      ],
+    },
+    {
+      id: '4',
+      label: 'Étes vous islamo-gauchiste ?',
+      type: FieldType.checkbox,
+      settings: {
+        required: true,
+      },
+    },
+    {
+      id: '5',
+      label: 'À quel point ?',
+      type: FieldType.radio,
+      options: ['Un peu', 'Beucoup', 'Complètement'],
+      settings: {
+        required: false,
+      },
+    },
+    {
+      id: '6',
+      label: 'Racontez nous votre vie !',
+      type: FieldType.longtext,
+      settings: {
+        required: false,
+      },
+    },
+  ],
+};
 
-export interface FieldSettings {
-  required: boolean;
-  description: boolean;
-}
+export function usePage(): Section {
+  const root = useMemo(() => new Section(defaultPage), []);
+  const [render, setRender] = useState(0);
 
-const defaultFields: Field[] = [
-  {
-    id: '1',
-    label: 'Nom',
-    description: 'Votre nom',
-    type: FieldType.text,
-    settings: {
-      required: false,
-      description: true,
-    },
-  },
-  {
-    id: '2',
-    label: 'Prénom',
-    type: FieldType.text,
-    settings: {
-      required: false,
-      description: false,
-    },
-  },
-  {
-    id: '3',
-    label: 'Étes vous islamo-gauchiste ?',
-    type: FieldType.checkbox,
-    settings: {
-      required: true,
-      description: false,
-    },
-  },
-  {
-    id: '4',
-    label: 'À quel point ?',
-    type: FieldType.radio,
-    options: ['Un peu', 'Beucoup', 'Complètement'],
-    settings: {
-      required: false,
-      description: false,
-    },
-  },
-  {
-    id: '5',
-    label: 'Racontez nous votre vie !',
-    type: FieldType.longtext,
-    settings: {
-      required: false,
-      description: false,
-    },
-  },
-];
-
-export function useFields() {
-  const [fields, setFields] = useState(defaultFields);
-
-  const findField = useCallback(
-    (id: string) => {
-      const field = fields.find((field) => field.id == id) as Field;
-      return {
-        field,
-        index: fields.indexOf(field),
-      };
-    },
-    [fields]
+  useEffect(() =>
+    root.on('patch', () => {
+      setRender(render + 1);
+    })
   );
 
-  const moveField = useCallback(
-    (id: string, atIndex: number) => {
-      const { field, index } = findField(id);
-      setFields(
-        update(fields, {
-          $splice: [
-            [index, 1],
-            [atIndex, 0, field],
-          ],
-        })
-      );
-    },
-    [findField, fields, setFields]
-  );
-
-  const removeField = useCallback(
-    (id: string) => {
-      const { index } = findField(id);
-      setFields(
-        update(fields, {
-          $splice: [[index, 1]],
-        })
-      );
-    },
-    [findField, fields, setFields]
-  );
-
-  return {
-    fields,
-    findField,
-    moveField,
-    removeField,
-  };
+  return root;
 }
