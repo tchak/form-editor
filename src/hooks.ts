@@ -10,48 +10,31 @@ const defaultPage: FieldSchema = {
       type: FieldType.section,
       label: 'Qui êtes-vous ?',
       description: '',
-      settings: {
-        required: false,
-      },
       content: [
         {
           label: 'Nom',
           description: 'Votre nom',
           type: FieldType.text,
-          settings: {
-            required: false,
-          },
         },
         {
           label: 'Prénom',
           type: FieldType.text,
-          settings: {
-            required: false,
-          },
         },
       ],
     },
     {
       label: 'Étes vous islamo-gauchiste ?',
       type: FieldType.checkbox,
-      settings: {
-        required: true,
-      },
+      required: true,
     },
     {
       label: 'À quel point ?',
       type: FieldType.radio,
       options: ['Un peu', 'Beaucoup', 'Complètement'],
-      settings: {
-        required: false,
-      },
     },
     {
       label: 'Racontez nous votre vie !',
       type: FieldType.longtext,
-      settings: {
-        required: false,
-      },
     },
   ],
 };

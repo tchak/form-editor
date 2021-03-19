@@ -14,19 +14,23 @@ export interface FieldSchema {
   id?: string;
   type: FieldType;
   label: string;
-  description?: string;
+  description?: string | null;
   unit?: string;
+  required?: boolean;
   options?: string[];
   content?: FieldSchema[];
-  settings?: FieldSettings;
-}
-
-export interface FieldSettings {
-  required?: boolean;
 }
 
 type PatchCallback = (field: Field | Section) => void;
 type FieldEmitter = Emitter<{ patch: PatchCallback }>;
+
+interface FieldSettings {
+  label: string;
+  description?: string | null;
+  unit?: string;
+  required?: boolean;
+  options?: string[];
+}
 
 export function isSection(field: Field | Section): field is Section {
   return field.type == FieldType.section;
@@ -39,20 +43,20 @@ export function isField(field: Field | Section): field is Field {
 export class Field {
   #id: string;
   #type: FieldType;
-  #label: string;
-  #description?: string;
-  #settings?: FieldSettings;
-  #options?: string[];
+  #settings: FieldSettings;
   #emitter?: FieldEmitter;
   #parent?: Section;
 
   constructor(field: FieldSchema, parent?: Section, emitter?: FieldEmitter) {
     this.#id = field.id ?? uuid();
     this.#type = field.type;
-    this.#label = field.label;
-    this.#description = field.description;
-    this.#settings = field.settings;
-    this.#options = field.options;
+    this.#settings = {
+      label: field.label,
+      description: field.description,
+      required: field.required,
+      options: field.options,
+      unit: field.unit,
+    };
     this.#emitter = emitter ?? parent?.emitter;
     this.#parent = parent;
   }
@@ -66,20 +70,20 @@ export class Field {
   }
 
   get label() {
-    return this.#label;
+    return this.#settings.label;
   }
 
   get description() {
-    return this.#description;
+    return this.#settings.description;
   }
 
-  get settings() {
-    return this.#settings ?? {};
+  get required() {
+    return this.#settings.required ?? false;
   }
 
   get options() {
     if (this.type == FieldType.radio) {
-      return this.#options ?? [];
+      return this.#settings.options ?? [];
     }
     return [];
   }
@@ -109,6 +113,16 @@ export class Field {
     return -1;
   }
 
+  get sectionIndex() {
+    if (this.#parent) {
+      const index = this.#parent.content
+        .filter(({ type }) => type == FieldType.section)
+        .indexOf(this);
+      return index != -1 ? `${index + 1}.` : '';
+    }
+    return '';
+  }
+
   on(event: 'patch', cb: PatchCallback) {
     return this.emitter.on(event, cb);
   }
@@ -124,13 +138,8 @@ export class Field {
     field.parent.insert(this, field.index);
   }
 
-  update({ label, description }: { label?: string; description?: string }) {
-    if (label) {
-      this.#label = label;
-    }
-    if (description) {
-      this.#description = description;
-    }
+  update(input: Partial<FieldSettings>) {
+    Object.assign(this.#settings, input);
     this.emitter.emit('patch', this);
   }
 
@@ -141,7 +150,7 @@ export class Field {
       label: this.label,
       description: this.description,
       options: this.options,
-      settings: this.settings,
+      required: this.required,
     };
   }
 }

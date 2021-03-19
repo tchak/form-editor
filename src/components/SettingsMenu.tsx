@@ -1,10 +1,21 @@
 import React, { useState } from 'react';
 import { HiOutlineCog, HiOutlineChevronRight } from 'react-icons/hi';
-import { Menu } from '@headlessui/react';
+import { Menu, Switch } from '@headlessui/react';
 
-import { FieldSettings } from '../tree';
+import { Field, Section } from '../tree';
 
-export function SettingsMenu({ settings }: { settings: FieldSettings }) {
+export function SettingsMenu({ field }: { field: Field | Section }) {
+  const [required, setRequired] = useState(field.required);
+  const [description, setDescription] = useState(field.description != null);
+  const saveRequired = (required: boolean) => {
+    setRequired(required);
+    field.update({ required });
+  };
+  const saveDescription = (description: boolean) => {
+    setDescription(description);
+    field.update({ description: description ? '' : null });
+  };
+
   return (
     <Menu>
       <div className="relative inline-block text-left">
@@ -20,8 +31,11 @@ export function SettingsMenu({ settings }: { settings: FieldSettings }) {
                 className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 role="menuitem"
               >
-                <span className="flex-1">Description</span>
-                <Toggle checked={false} />
+                <Toggle
+                  label="Description"
+                  checked={description}
+                  onChange={saveDescription}
+                />
               </div>
             </Menu.Item>
             <Menu.Item>
@@ -29,8 +43,11 @@ export function SettingsMenu({ settings }: { settings: FieldSettings }) {
                 className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 role="menuitem"
               >
-                <span className="flex-1">Obligatoire</span>
-                <Toggle checked={settings.required ?? false} />
+                <Toggle
+                  label="Obligatoire"
+                  checked={required}
+                  onChange={saveRequired}
+                />
               </div>
             </Menu.Item>
             <Menu.Item>
@@ -52,24 +69,32 @@ export function SettingsMenu({ settings }: { settings: FieldSettings }) {
   );
 }
 
-function Toggle({ checked }: { checked: boolean }) {
-  const [enabled, setEnabled] = useState(checked);
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
   return (
-    <button
-      type="button"
-      className={`${
-        enabled ? 'bg-blue-500' : 'bg-gray-200'
-      } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-      aria-pressed="false"
-      onClick={() => setEnabled(!enabled)}
-    >
-      <span className="sr-only">Use setting</span>
-      <span
-        aria-hidden="true"
+    <Switch.Group>
+      <Switch.Label className="flex-1">{label}</Switch.Label>
+      <Switch
+        checked={checked}
+        onChange={onChange}
         className={`${
-          enabled ? 'translate-x-5' : 'translate-x-0'
-        } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-      ></span>
-    </button>
+          checked ? 'bg-blue-500' : 'bg-gray-200'
+        } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+      >
+        <span
+          aria-hidden="true"
+          className={`${
+            checked ? 'translate-x-5' : 'translate-x-0'
+          } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+        ></span>
+      </Switch>
+    </Switch.Group>
   );
 }

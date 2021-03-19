@@ -43,6 +43,7 @@ function FormField({ field, index }: { field: Field; index: number }) {
   const [showAddField, setShowAddField] = useState(false);
   const [label, setLabel] = useState(field.label);
   const [description, setDescription] = useState(field.description);
+  const hasDescription = field.description != null;
 
   const openAddField = () => setShowAddField(true);
   const closeAddField = () => setShowAddField(false);
@@ -90,7 +91,7 @@ function FormField({ field, index }: { field: Field; index: number }) {
         ref={drop}
         className="flex text-lg text-gray-600 w-28 pt-3 opacity-0 group-hover:opacity-100 transition duration-150 ease-in-out"
       >
-        <SettingsMenu settings={field.settings} />
+        <SettingsMenu field={field} />
         <button
           type="button"
           className="hover:bg-gray-200 rounded p-1 h-6 w-6"
@@ -130,7 +131,9 @@ function FormField({ field, index }: { field: Field; index: number }) {
               className={`${
                 isSection(field) ? 'text-2xl font-bold' : 'font-semibold'
               } flex-no-grow text-blue-500 border-none pr-1 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
-            >{`${index + 1}.`}</span>
+            >
+              {field.sectionIndex}
+            </span>
           ) : null}
           <input
             className={`${
@@ -143,18 +146,18 @@ function FormField({ field, index }: { field: Field; index: number }) {
             value={label}
             onChange={({ currentTarget: { value } }) => saveLabel(value)}
           />
-          {field.settings?.required && (
+          {field.required && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-800">
               *
             </span>
           )}
         </div>
 
-        {description != null && (
+        {hasDescription && (
           <textarea
             className="text-black border-none p-0 mb-2 text-xs focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
             rows={1}
-            value={description}
+            value={description ?? ''}
             onChange={({ currentTarget: { value } }) => saveDescription(value)}
             autoCorrect="off"
             autoComplete="off"
@@ -185,8 +188,16 @@ function SectionInsert({ field }: { field: Section }) {
 
 function FieldInput({ field }: { field: Field | Section }) {
   const [checked, setChecked] = useState(true);
-  const [selected, setSelected] = useState(field.options[0] ?? '');
+  const [options, setOptions] = useState(field.options);
+  const [selected, setSelected] = useState(options[0] ?? '');
   const [, drop] = useDrop(() => ({ accept: 'Field' }));
+
+  const saveOptions = (options: string[], option: string, index: number) => {
+    options = [...options];
+    options.splice(index, 1, option);
+    setOptions(options);
+    field.update({ options });
+  };
 
   switch (field.type) {
     case FieldType.text:
@@ -220,19 +231,22 @@ function FieldInput({ field }: { field: Field | Section }) {
     case FieldType.radio:
       return (
         <div>
-          {field.options.map((option) => (
-            <div key={option}>
+          {options.map((option, index) => (
+            <div key={index} className="flex items-center">
               <input
                 radioGroup={field.id}
-                id={`${field.id}-${option}`}
                 type="radio"
                 checked={selected == option}
                 onChange={() => setSelected(option)}
                 className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
               />
-              <label htmlFor={`${field.id}-${option}`} className="ml-2">
-                {option}
-              </label>
+              <input
+                className="ml-2"
+                value={option}
+                onChange={({ currentTarget: { value } }) =>
+                  saveOptions(options, value, index)
+                }
+              />
             </div>
           ))}
         </div>
