@@ -1,29 +1,35 @@
 import React, { useMemo, useState } from 'react';
+import { HiOutlineMinus, HiOutlinePlus } from 'react-icons/hi';
 import {
   Field,
-  WhenExpression,
-  ThenExpression,
-  BinaryExpression,
-  LogicalExpression,
+  ConditionExpression,
+  ActionExpression,
   LogicalOperator,
-  BinaryOperator,
-  ThenAction,
+  ConditionOperator,
+  Action,
   FieldType,
-  BinaryExpressionValue,
+  ConditionValue,
   isUnaryOperator,
 } from '../tree';
-
-const ACTIONS = Object.keys(ThenAction);
-const LOGICAL_OPERATORS = Object.keys(LogicalOperator);
 
 export function FieldLogic({ field }: { field: Field }) {
   return (
     <div>
-      <WhenExpressionInput field={field} expression={field.logic.when} />
       <ul>
-        {field.logic.then.map((expression, index) => (
-          <li key={index}>
-            <ThenExpressionInput
+        {field.logic.conditions.map((expression, index) => (
+          <li key={keyFromExpression(index, expression)}>
+            <ConditionExpressionInput
+              index={index}
+              field={field}
+              expression={expression}
+            />
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {field.logic.actions.map((expression, index) => (
+          <li key={keyFromExpression(index, expression)}>
+            <ActionExpressionInput
               index={index}
               field={field}
               expression={expression}
@@ -35,111 +41,18 @@ export function FieldLogic({ field }: { field: Field }) {
   );
 }
 
-function WhenExpressionInput({
-  field,
-  expression,
-}: {
-  field: Field;
-  expression: WhenExpression;
-}) {
-  if ('id' in expression) {
-    return <BinaryExpressionInput field={field} expression={expression} />;
-  }
-  return null;
-}
-
-function ThenExpressionInput({
+function ConditionExpressionInput({
   index,
   field,
   expression,
 }: {
-  field: Field;
   index: number;
-  expression: ThenExpression;
-}) {
-  const [action, setAction] = useState(expression.action);
-  const [target, setTarget] = useState(expression.id);
-
-  const saveAction = (action: ThenAction) => {
-    setAction(action);
-    const then = [...field.logic.then];
-    then.splice(index, 1, { ...expression, action });
-    field.update({ logic: { ...field.logic, then } });
-  };
-  const saveTarget = (id: string) => {
-    setTarget(id);
-    const then = [...field.logic.then];
-    then.splice(index, 1, { ...expression, id });
-    field.update({ logic: { ...field.logic, then } });
-  };
-
-  return (
-    <div className="flex items-center mt-2">
-      <span className="px-2 text-sm font-medium text-gray-800">
-        {index == 0 ? 'Then' : 'And'}
-      </span>
-      <select
-        value={action}
-        onChange={({ currentTarget: { value } }) =>
-          saveAction(value as ThenAction)
-        }
-        className="ml-1 pl-3 pr-10 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-      >
-        {ACTIONS.map((action) => (
-          <option key={action} value={action}>
-            {action}
-          </option>
-        ))}
-      </select>
-      <select
-        value={target}
-        onChange={({ currentTarget: { value } }) => saveTarget(value)}
-        className="ml-1 pl-3 pr-10 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-      >
-        {!expression.id ? <option value=""></option> : null}
-        {field.siblings.map((field) => (
-          <option key={field.id} value={field.id}>
-            {field.displayLabel}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function LogicalExpressionInput({
-  field,
-  expression,
-}: {
   field: Field;
-  expression: LogicalExpression;
+  expression: ConditionExpression;
 }) {
-  return (
-    <div className="flex">
-      <select
-        value={expression.operator}
-        onChange={() => {}}
-        className="ml-1 pl-3 pr-10 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-      >
-        {LOGICAL_OPERATORS.map((operator) => (
-          <option key={operator} value={operator}>
-            {operator}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function BinaryExpressionInput({
-  field,
-  expression,
-}: {
-  field: Field;
-  expression: BinaryExpression;
-}) {
+  const [logicalOperator, setLogicalOperator] = useState(field.logic.operator);
   const [operator, setOperator] = useState(expression.operator);
-  const [target, setTarget] = useState(expression.id);
+  const [target, setTarget] = useState(expression.targetId);
   const [value, setValue] = useState(expression.value);
   const targetField = useMemo<Field | undefined>(() => {
     if (target) {
@@ -147,28 +60,75 @@ function BinaryExpressionInput({
     }
   }, [field, target]);
 
-  const saveOperator = (operator: BinaryOperator) => {
+  const saveLogicalOperator = (operator: LogicalOperator) => {
+    setLogicalOperator(operator);
+    field.update({ logic: { ...field.logic, operator } });
+  };
+  const saveOperator = (operator: ConditionOperator) => {
     setOperator(operator);
+    const conditions = [...field.logic.conditions];
+    conditions.splice(index, 1, { ...expression, operator });
     field.update({
-      logic: { ...field.logic, when: { ...expression, operator } },
+      logic: { ...field.logic, conditions },
     });
   };
-  const saveTarget = (id: string) => {
-    setTarget(id);
-    field.update({ logic: { ...field.logic, when: { ...expression, id } } });
+  const saveTarget = (targetId: string) => {
+    setTarget(targetId);
+    const conditions = [...field.logic.conditions];
+    conditions.splice(index, 1, { ...expression, targetId });
+    field.update({ logic: { ...field.logic, conditions } });
   };
-  const saveValue = (value: BinaryExpressionValue) => {
+  const saveValue = (value: ConditionValue) => {
     setValue(value);
-    field.update({ logic: { ...field.logic, when: { ...expression, value } } });
+    const conditions = [...field.logic.conditions];
+    conditions.splice(index, 1, { ...expression, value });
+    field.update({ logic: { ...field.logic, conditions } });
+  };
+  const addCondition = () => {
+    const conditions = [...field.logic.conditions];
+    conditions.splice(index + 1, 0, {
+      operator: ConditionOperator.IS,
+      targetId: target,
+      value: targetField?.defaultValue ?? '',
+    });
+    field.update({ logic: { ...field.logic, conditions } });
+  };
+  const removeCondition = () => {
+    const conditions = [...field.logic.conditions];
+    conditions.splice(index, 1);
+    field.update({ logic: { ...field.logic, conditions } });
   };
 
   return (
-    <div className="flex items-center">
-      <span className="px-2 text-sm font-medium text-gray-800">When</span>
+    <div className="flex items-center mb-2">
+      {index == 1 ? (
+        <select
+          value={logicalOperator}
+          onChange={({ currentTarget: { value } }) =>
+            saveLogicalOperator(value as LogicalOperator)
+          }
+          style={{ width: '82px' }}
+          className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+        >
+          <option value={LogicalOperator.AND}>And</option>
+          <option value={LogicalOperator.OR}>Ou</option>
+        </select>
+      ) : (
+        <span
+          style={{ width: '82px' }}
+          className="mr-1 pr-1 text-sm font-medium text-gray-800 text-right"
+        >
+          {index == 0
+            ? 'Si'
+            : field.logic.operator == LogicalOperator.AND
+            ? 'Et'
+            : 'Ou'}
+        </span>
+      )}
       <select
         value={target}
         onChange={({ currentTarget: { value } }) => saveTarget(value)}
-        className="ml-1 pl-3 pr-10 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+        className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
       >
         {field.siblingFields.map((field) => (
           <option key={field.id} value={field.id}>
@@ -180,9 +140,9 @@ function BinaryExpressionInput({
         <select
           value={operator}
           onChange={({ currentTarget: { value } }) =>
-            saveOperator(value as BinaryOperator)
+            saveOperator(value as ConditionOperator)
           }
-          className="ml-1 pl-3 pr-10 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
           {targetField.operators.map((operator) => (
             <option key={operator} value={operator}>
@@ -192,24 +152,103 @@ function BinaryExpressionInput({
         </select>
       )}
       {targetField && !isUnaryOperator(operator) && (
-        <BinaryExpressionInputValue
+        <ConditionValueInput
           field={targetField}
           value={value}
           onChange={saveValue}
         />
       )}
+      <button className="mr-1 text-lg" type="button" onClick={addCondition}>
+        <HiOutlinePlus />
+      </button>
+      <button className="text-lg" type="button" onClick={removeCondition}>
+        <HiOutlineMinus />
+      </button>
     </div>
   );
 }
 
-function BinaryExpressionInputValue({
+function ActionExpressionInput({
+  index,
+  field,
+  expression,
+}: {
+  field: Field;
+  index: number;
+  expression: ActionExpression;
+}) {
+  const [action, setAction] = useState(expression.action);
+  const [target, setTarget] = useState(expression.targetId);
+
+  const saveAction = (action: Action) => {
+    setAction(action);
+    const actions = [...field.logic.actions];
+    actions.splice(index, 1, { ...expression, action });
+    field.update({ logic: { ...field.logic, actions } });
+  };
+  const saveTarget = (targetId: string) => {
+    setTarget(targetId);
+    const actions = [...field.logic.actions];
+    actions.splice(index, 1, { ...expression, targetId });
+    field.update({ logic: { ...field.logic, actions } });
+  };
+  const addAction = () => {
+    const actions = [...field.logic.actions];
+    actions.splice(index + 1, 0, { action });
+    field.update({ logic: { ...field.logic, actions } });
+  };
+  const removeAction = () => {
+    const actions = [...field.logic.actions];
+    actions.splice(index, 1);
+    field.update({ logic: { ...field.logic, actions } });
+  };
+
+  return (
+    <div className="flex items-center mb-2">
+      <span
+        className="mr-1 pr-1 text-sm font-medium text-gray-800 w-20 text-right"
+        style={{ width: '82px' }}
+      >
+        {index == 0 ? 'Alors' : 'Et'}
+      </span>
+      <select
+        value={action}
+        onChange={({ currentTarget: { value } }) => saveAction(value as Action)}
+        className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+      >
+        <option value={Action.hide}>Cacher</option>
+        <option value={Action.require}>Rendre obligatoire</option>
+      </select>
+      <select
+        value={target}
+        onChange={({ currentTarget: { value } }) => saveTarget(value)}
+        className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+      >
+        {!expression.targetId ? <option value=""></option> : null}
+        {field.siblings.map((field) => (
+          <option key={field.id} value={field.id}>
+            {field.displayLabel}
+          </option>
+        ))}
+      </select>
+      <button className="mr-1 text-lg" type="button" onClick={addAction}>
+        <HiOutlinePlus />
+      </button>
+      <button className="text-lg" type="button" onClick={removeAction}>
+        <HiOutlineMinus />
+      </button>
+    </div>
+  );
+}
+
+function ConditionValueInput({
   field,
   value,
   onChange,
 }: {
   field: Field;
-  value: BinaryExpressionValue;
-  onChange: (value: BinaryExpressionValue) => void;
+  value: ConditionValue;
+  onChange: (value: ConditionValue) => void;
 }) {
   switch (field.type) {
     case FieldType.checkbox:
@@ -222,7 +261,7 @@ function BinaryExpressionInputValue({
               field.type == FieldType.checkbox ? value === 'true' : value
             )
           }
-          className="ml-1 pl-3 pr-10 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
           {field.optionsWithBlank.map((value, index) => (
             <option key={index} value={value}>
@@ -237,8 +276,23 @@ function BinaryExpressionInputValue({
           type="text"
           value={value as string}
           onChange={({ currentTarget: { value } }) => onChange(value)}
-          className="ml-1 p-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+          className="mr-1 p-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 rounded-md"
         />
       );
   }
+}
+
+function keyFromExpression(
+  index: number,
+  expression: ConditionExpression | ActionExpression
+) {
+  if ('operator' in expression) {
+    return [index, expression.operator, expression.targetId]
+      .filter((key) => key)
+      .join('-');
+  }
+
+  return [index, expression.action, expression.targetId]
+    .filter((key) => key)
+    .join('-');
 }

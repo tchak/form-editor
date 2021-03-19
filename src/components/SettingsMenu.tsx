@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import { HiOutlineCog } from 'react-icons/hi';
 import { Menu, Switch } from '@headlessui/react';
 
-import { BinaryOperator, Field, FieldType, Section, ThenAction } from '../tree';
+import {
+  ConditionOperator,
+  Field,
+  FieldType,
+  LogicalOperator,
+  Section,
+  Action,
+} from '../tree';
 
 export function SettingsMenu({ field }: { field: Field | Section }) {
   const [required, setRequired] = useState(field.required);
@@ -19,14 +26,17 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
   const addLogic = () => {
     const logic = new Field({
       type: FieldType.logic,
-      label: `Une condition pour « ${field.displayLabel} »`,
+      label: `Les conditions pour « ${field.displayLabel} »`,
       logic: {
-        when: {
-          operator: BinaryOperator.IS,
-          id: field.id,
-          value: field.defaultValue,
-        },
-        then: [{ action: ThenAction.hide }],
+        conditions: [
+          {
+            operator: ConditionOperator.IS,
+            targetId: field.id,
+            value: field.defaultValue,
+          },
+        ],
+        operator: LogicalOperator.AND,
+        actions: [{ action: Action.hide }],
       },
     });
     field.parent.insert(logic, field.index + 1);

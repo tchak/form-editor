@@ -23,7 +23,12 @@ export interface FieldSchema {
   logic?: FieldLogic;
 }
 
-export enum BinaryOperator {
+export enum LogicalOperator {
+  AND = 'AND',
+  OR = 'OR',
+}
+
+export enum ConditionOperator {
   IS = 'IS',
   IS_NOT = 'IS_NOT',
   IS_EMPTY = 'IS_EMPTY',
@@ -36,40 +41,28 @@ export enum BinaryOperator {
   ENDS_WITH = 'ENDS_WITH',
 }
 
-export enum LogicalOperator {
-  AND = 'AND',
-  OR = 'OR',
-}
-
-export type BinaryExpressionValue = string | number | boolean | Date | string[];
-
-export interface BinaryExpression {
-  operator: BinaryOperator;
-  id: string;
-  value: BinaryExpressionValue;
-}
-
-export interface LogicalExpression {
-  operator: LogicalOperator;
-  left: WhenExpression;
-  right: WhenExpression;
-}
-
-export type WhenExpression = BinaryExpression | LogicalExpression;
-
-export enum ThenAction {
+export enum Action {
   hide = 'hide',
   require = 'require',
 }
 
-export interface ThenExpression {
-  action: ThenAction;
-  id?: string;
+export type ConditionValue = string | number | boolean | Date | string[];
+
+export interface ConditionExpression {
+  operator: ConditionOperator;
+  targetId: string;
+  value: ConditionValue;
+}
+
+export interface ActionExpression {
+  action: Action;
+  targetId?: string;
 }
 
 export interface FieldLogic {
-  when: WhenExpression;
-  then: ThenExpression[];
+  conditions: ConditionExpression[];
+  operator: LogicalOperator;
+  actions: ActionExpression[];
 }
 
 type PatchCallback = (field: Field | Section) => void;
@@ -84,10 +77,10 @@ interface FieldSettings {
   logic?: FieldLogic;
 }
 
-export function isUnaryOperator(operator: BinaryOperator) {
+export function isUnaryOperator(operator: ConditionOperator) {
   return (
-    operator == BinaryOperator.IS_EMPTY ||
-    operator == BinaryOperator.IS_NOT_EMPTY
+    operator == ConditionOperator.IS_EMPTY ||
+    operator == ConditionOperator.IS_NOT_EMPTY
   );
 }
 
@@ -233,20 +226,20 @@ export class Field {
 
   get operators() {
     const base = [
-      BinaryOperator.IS,
-      BinaryOperator.IS_NOT,
-      BinaryOperator.IS_EMPTY,
-      BinaryOperator.IS_NOT_EMPTY,
+      ConditionOperator.IS,
+      ConditionOperator.IS_NOT,
+      ConditionOperator.IS_EMPTY,
+      ConditionOperator.IS_NOT_EMPTY,
     ];
     switch (this.type) {
       case FieldType.text:
       case FieldType.longtext:
         return [
           ...base,
-          BinaryOperator.CONTAINS,
-          BinaryOperator.CONTAINS_NOT,
-          BinaryOperator.STARTS_WITH,
-          BinaryOperator.ENDS_WITH,
+          ConditionOperator.CONTAINS,
+          ConditionOperator.CONTAINS_NOT,
+          ConditionOperator.STARTS_WITH,
+          ConditionOperator.ENDS_WITH,
         ];
       default:
         return base;
