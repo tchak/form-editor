@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useQuery } from 'react-query';
 
 import { FieldSchema, FieldType, Page } from './tree';
 
@@ -59,21 +60,24 @@ function savePage(page: FieldSchema) {
   );
 }
 
-function resetPage() {
+export function resetPage() {
   currentPage = undefined;
   localStorage.removeItem(FORM_EDITOR_KEY);
+  location.reload();
 }
 
 export function usePage(): Page {
-  const root = useMemo(() => new Page(getDefaultPage()), []);
-  const [render, setRender] = useState(0);
+  const initialData = useMemo(() => new Page(getDefaultPage()), []);
+  const { data, refetch } = useQuery('form', () => initialData, {
+    initialData,
+  });
 
   useEffect(() =>
-    root.on('patch', () => {
-      savePage(root.toJSON());
-      setRender(render + 1);
+    data?.on('patch', () => {
+      savePage(data.toJSON());
+      refetch();
     })
   );
 
-  return root;
+  return data ?? initialData;
 }
