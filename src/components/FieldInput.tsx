@@ -1,20 +1,23 @@
-import React, { useState } from 'react';
-import { HiOutlineTrash } from 'react-icons/hi';
-import { useDrop } from 'react-dnd';
+import React, { RefObject, useEffect, useRef, useState } from 'react';
+import { HiOutlineMinus } from 'react-icons/hi';
 
-import { Field, Section, FieldType, isSection } from '../tree';
+import { Field, Section, FieldType } from '../tree';
 import { FieldLogic } from './FieldLogic';
-import { FormField } from './FormField';
 
 export function FieldInput({ field }: { field: Field | Section }) {
-  const [checked, setChecked] = useState(true);
   const [options, setOptions] = useState(field.options);
-  const [selected, setSelected] = useState(options[0] ?? '');
-  const [, drop] = useDrop(() => ({ accept: 'Field' }));
+  const focusIndexRef = useRef<number>();
 
   const saveOptions = (index: number, option: string) => {
     const options = [...field.options];
     options.splice(index, 1, option);
+    setOptions(options);
+    field.update({ options });
+  };
+  const addOption = (index: number, option: string) => {
+    const options = [...field.options];
+    options.splice(index + 1, 0, option);
+    focusIndexRef.current = index + 1;
     setOptions(options);
     field.update({ options });
   };
@@ -29,6 +32,7 @@ export function FieldInput({ field }: { field: Field | Section }) {
     case FieldType.text:
       return (
         <input
+          tabIndex={-1}
           readOnly
           className="text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
           id={field.id}
@@ -38,6 +42,7 @@ export function FieldInput({ field }: { field: Field | Section }) {
     case FieldType.longtext:
       return (
         <textarea
+          tabIndex={-1}
           readOnly
           className="text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
           id={field.id}
@@ -49,8 +54,9 @@ export function FieldInput({ field }: { field: Field | Section }) {
         <input
           id={field.id}
           type="checkbox"
-          checked={checked}
-          onChange={() => setChecked(!checked)}
+          checked={true}
+          tabIndex={-1}
+          readOnly
           className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none mt-1"
         />
       );
@@ -58,34 +64,23 @@ export function FieldInput({ field }: { field: Field | Section }) {
       return (
         <div>
           {options.map((option, index) => (
-            <div key={index} className="flex items-center">
-              <input
-                radioGroup={field.id}
-                type="radio"
-                checked={selected == option}
-                onChange={() => setSelected(option)}
-                className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
-              />
-              <input
-                className="ml-2"
-                value={option}
-                onChange={({ currentTarget: { value } }) =>
-                  saveOptions(index, value)
-                }
-              />
-              <button
-                className="hover:text-red-600 text-lg opacity-0 hover:opacity-100 p-1"
-                onClick={() => removeOption(index)}
-              >
-                <HiOutlineTrash />
-              </button>
-            </div>
+            <RadioInput
+              key={index}
+              option={option}
+              checked={index == 0}
+              focused={() => focusIndexRef.current == index}
+              group={field.id}
+              addOption={() => addOption(index, '')}
+              updateOption={(option) => saveOptions(index, option)}
+              removeOption={() => removeOption(index)}
+            />
           ))}
         </div>
       );
     case FieldType.number:
       return (
         <input
+          tabIndex={-1}
           readOnly
           className="text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
           id={field.id}
@@ -95,32 +90,67 @@ export function FieldInput({ field }: { field: Field | Section }) {
     case FieldType.logic:
       return <FieldLogic field={field} />;
     default:
-      if (isSection(field)) {
-        return (
-          <ul ref={drop}>
-            {field.content.map((field) => (
-              <FormField key={field.id} field={field} />
-            ))}
-            <SectionInsert field={field} />
-          </ul>
-        );
-      }
       return null;
   }
 }
 
-function SectionInsert({ field }: { field: Section }) {
-  const [, drop] = useDrop(
-    () => ({
-      accept: 'Field',
-      canDrop: () => false,
-      hover(item: Field | Section) {
-        if (item != field && !field.content.includes(item)) {
-          field.insert(item, field.content.length);
-        }
-      },
-    }),
-    []
+function RadioInput({
+  option,
+  group,
+  checked,
+  focused,
+  addOption,
+  updateOption,
+  removeOption,
+}: {
+  option: string;
+  group: string;
+  checked: boolean;
+  focused: () => boolean;
+  addOption: () => void;
+  updateOption: (value: string) => void;
+  removeOption: () => void;
+}) {
+  const [ref, setFocus] = useFocus();
+  useEffect(() => {
+    if (focused()) {
+      setFocus();
+    }
+  }, [focused, setFocus]);
+
+  return (
+    <div className="flex items-center">
+      <input
+        radioGroup={group}
+        type="radio"
+        checked={checked}
+        readOnly
+        tabIndex={-1}
+        className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
+      />
+      <input
+        ref={ref}
+        type="text"
+        className="ml-2 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
+        value={option}
+        onChange={({ currentTarget: { value } }) => updateOption(value)}
+        onKeyPress={(event) => {
+          if (event.key == 'Enter') {
+            addOption();
+          }
+        }}
+      />
+      <button
+        className="hover:text-red-600 text-lg opacity-0 hover:opacity-100 p-1 ml-2"
+        onClick={() => removeOption()}
+      >
+        <HiOutlineMinus />
+      </button>
+    </div>
   );
-  return <li className="p-2" ref={drop}></li>;
+}
+
+function useFocus(): [RefObject<HTMLInputElement>, () => void] {
+  const ref = useRef<HTMLInputElement>(null);
+  return [ref, () => ref.current?.focus()];
 }

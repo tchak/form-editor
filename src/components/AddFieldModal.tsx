@@ -24,16 +24,17 @@ export function AddFieldModal({
         }),
       });
     } else {
-      return new Field({
-        type,
-        label: intl.formatMessage(
-          {
-            id: 'newField',
-            defaultMessage: 'New field "{type}"',
-          },
-          { type: formatFieldType(intl, type) }
-        ),
-      });
+      const label = intl.formatMessage(
+        {
+          id: 'newField',
+          defaultMessage: 'New field "{type}"',
+        },
+        { type: formatFieldType(intl, type) }
+      );
+      if (type == FieldType.radio) {
+        return new Field({ type, label, options: [''] });
+      }
+      return new Field({ type, label });
     }
   };
   const close = () => done();
