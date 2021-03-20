@@ -10,6 +10,7 @@
   "dependencies": {
     "@headlessui/react": "^0.3.1-d519f7d",
     "@reach/dialog": "^0.13.2",
+    "formik": "^2.2.6",
     "nanoevents": "^5.1.13",
     "react": "^17.0.0",
     "react-dnd": "^14.0.1",

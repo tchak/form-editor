@@ -17,7 +17,11 @@ function App() {
     <IntlProvider locale="fr" messages={messages} onError={() => {}}>
       <QueryClientProvider client={client}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Header onReset={resetPage} onPreview={() => setPreview(!preview)} />
+          <Header
+            preview={preview}
+            onReset={resetPage}
+            onPreview={() => setPreview(!preview)}
+          />
           <div className="max-w-3xl mx-auto">
             <div className="mt-20"></div>
             {preview ? <FormPreview /> : <FormEditor />}

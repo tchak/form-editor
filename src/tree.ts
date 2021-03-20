@@ -228,6 +228,12 @@ export class Field {
     );
   }
 
+  get siblingLogics() {
+    return this.parent.content.filter(
+      ({ id, type }) => id != this.id && type == FieldType.logic
+    );
+  }
+
   get operators() {
     const base = [
       ConditionOperator.IS,
@@ -275,6 +281,39 @@ export class Field {
     this.emitter.emit('patch', this);
   }
 
+  getValidator(values: Record<string, ConditionValue>) {
+    return (value: ConditionValue) => {
+      if ((this.required || this.isRequired(values)) && empty(value)) {
+        return 'Required';
+      }
+    };
+  }
+
+  isHidden(values: Record<string, ConditionValue>) {
+    const logicFields = this.siblingLogics.filter(({ logic }) =>
+      logic.actions.find(
+        ({ targetId, action }) => this.id == targetId && action == Action.hide
+      )
+    );
+    return computeLogics(
+      logicFields.map(({ logic }) => logic),
+      values
+    );
+  }
+
+  isRequired(values: Record<string, ConditionValue>) {
+    const logicFields = this.siblingLogics.filter(({ logic }) =>
+      logic.actions.find(
+        ({ targetId, action }) =>
+          this.id == targetId && action == Action.require
+      )
+    );
+    return computeLogics(
+      logicFields.map(({ logic }) => logic),
+      values
+    );
+  }
+
   toJSON(): FieldSchema {
     return {
       id: this.id,
@@ -305,6 +344,20 @@ export class Section extends Field {
       }
       return new Field(field, this, this.emitter);
     });
+  }
+
+  get publicContent() {
+    return this.content.filter(({ type }) => type != FieldType.logic);
+  }
+
+  get publicIds(): string[] {
+    return this.publicContent.flatMap((field) =>
+      isSection(field) ? field.publicIds : field.id
+    );
+  }
+
+  get initialValues(): Record<string, ConditionValue> {
+    return Object.fromEntries(this.publicIds.map((id) => [id, '']));
   }
 
   insert(field: Field | Section, atIndex: number) {
@@ -344,4 +397,88 @@ export class Page extends Section {
   constructor(field: FieldSchema) {
     super(field, undefined, createNanoEvents());
   }
+}
+
+function computeLogics(
+  logics: FieldLogic[],
+  values: Record<string, ConditionValue>
+) {
+  return logics.find(({ conditions, operator }) =>
+    computeConditions(operator, conditions, values)
+  );
+}
+
+function computeConditions(
+  operator: LogicalOperator,
+  conditions: ConditionExpression[],
+  values: Record<string, ConditionValue>
+): boolean {
+  if (conditions.length > 1) {
+    if (operator == LogicalOperator.AND) {
+      return !conditions.find(
+        (condition) => computeCondition(condition, values) === false
+      );
+    }
+    return !!conditions.find((condition) =>
+      computeCondition(condition, values)
+    );
+  }
+  return computeCondition(conditions[0], values);
+}
+
+function computeCondition(
+  condition: ConditionExpression,
+  values: Record<string, ConditionValue>
+) {
+  return computeOperator(
+    condition.operator,
+    values[condition.targetId],
+    condition.value
+  );
+}
+
+function computeOperator(
+  operator: ConditionOperator,
+  left: ConditionValue,
+  right: ConditionValue
+) {
+  switch (operator) {
+    case ConditionOperator.IS:
+      return left == right;
+    case ConditionOperator.IS_NOT:
+      return left !== right;
+    case ConditionOperator.IS_EMPTY:
+      return empty(left);
+    case ConditionOperator.IS_NOT_EMPTY:
+      return !empty(left);
+    case ConditionOperator.CONTAINS:
+      return contains(left, right);
+    case ConditionOperator.CONTAINS_NOT:
+      return !contains(left, right);
+    case ConditionOperator.STARTS_WITH:
+      return `${left}`.startsWith(`${right}`);
+    case ConditionOperator.ENDS_WITH:
+      return `${left}`.endsWith(`${right}`);
+    default:
+      return false;
+  }
+}
+
+function empty(value: ConditionValue): boolean {
+  if (Array.isArray(value)) {
+    return value.length == 0;
+  }
+  return !value;
+}
+
+function contains(list: ConditionValue, value: ConditionValue) {
+  if (value == null) {
+    return false;
+  }
+  if (Array.isArray(list)) {
+    return list.includes(`${value}`);
+  } else if (typeof list == 'string') {
+    return list.includes(`${value}`);
+  }
+  return false;
 }
