@@ -1,10 +1,10 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react';
 import { HiOutlineMinus } from 'react-icons/hi';
 
-import { Field, Section, FieldType } from '../tree';
+import { Field, FieldType } from '../tree';
 import { FieldLogic } from './FieldLogic';
 
-export function FieldInput({ field }: { field: Field | Section }) {
+export function FieldInput({ field }: { field: Field }) {
   const [options, setOptions] = useState(field.options);
   const focusIndexRef = useRef<number>();
 
@@ -14,9 +14,9 @@ export function FieldInput({ field }: { field: Field | Section }) {
     setOptions(options);
     field.update({ options });
   };
-  const addOption = (index: number, option: string) => {
+  const addOption = (index: number) => {
     const options = [...field.options];
-    options.splice(index + 1, 0, option);
+    options.splice(index + 1, 0, '');
     focusIndexRef.current = index + 1;
     setOptions(options);
     field.update({ options });
@@ -69,8 +69,8 @@ export function FieldInput({ field }: { field: Field | Section }) {
               option={option}
               checked={index == 0}
               focused={() => focusIndexRef.current == index}
-              group={field.id}
-              addOption={() => addOption(index, '')}
+              group={`radio-group-${field.id}`}
+              addOption={() => addOption(index)}
               updateOption={(option) => saveOptions(index, option)}
               removeOption={() => removeOption(index)}
             />
