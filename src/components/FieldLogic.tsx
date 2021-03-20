@@ -110,7 +110,7 @@ function ConditionExpressionInput({
           style={{ width: '82px' }}
           className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
-          <option value={LogicalOperator.AND}>And</option>
+          <option value={LogicalOperator.AND}>Et</option>
           <option value={LogicalOperator.OR}>Ou</option>
         </select>
       ) : (
@@ -128,7 +128,7 @@ function ConditionExpressionInput({
       <select
         value={target}
         onChange={({ currentTarget: { value } }) => saveTarget(value)}
-        className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+        className="w-60 mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
       >
         {field.siblingFields.map((field) => (
           <option key={field.id} value={field.id}>
@@ -142,7 +142,7 @@ function ConditionExpressionInput({
           onChange={({ currentTarget: { value } }) =>
             saveOperator(value as ConditionOperator)
           }
-          className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          className="w-36 mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
           {targetField.operators.map((operator) => (
             <option key={operator} value={operator}>
@@ -158,12 +158,24 @@ function ConditionExpressionInput({
           onChange={saveValue}
         />
       )}
-      <button className="mr-1 text-lg" type="button" onClick={addCondition}>
-        <HiOutlinePlus />
-      </button>
-      <button className="text-lg" type="button" onClick={removeCondition}>
-        <HiOutlineMinus />
-      </button>
+      <div className="text-right text-lg flex">
+        {index != 0 ? (
+          <button
+            className="mr-1 hover:text-red-600"
+            type="button"
+            onClick={removeCondition}
+          >
+            <HiOutlineMinus />
+          </button>
+        ) : (
+          <span className="mr-1">
+            <HiOutlineMinus className="opacity-0" />
+          </span>
+        )}
+        <button type="button" onClick={addCondition}>
+          <HiOutlinePlus />
+        </button>
+      </div>
     </div>
   );
 }
@@ -214,7 +226,7 @@ function ActionExpressionInput({
       <select
         value={action}
         onChange={({ currentTarget: { value } }) => saveAction(value as Action)}
-        className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+        className="w-60 mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
       >
         <option value={Action.hide}>Cacher</option>
         <option value={Action.require}>Rendre obligatoire</option>
@@ -222,7 +234,7 @@ function ActionExpressionInput({
       <select
         value={target}
         onChange={({ currentTarget: { value } }) => saveTarget(value)}
-        className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+        className="flex-grow mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
       >
         {!expression.targetId ? <option value=""></option> : null}
         {field.siblings.map((field) => (
@@ -231,12 +243,24 @@ function ActionExpressionInput({
           </option>
         ))}
       </select>
-      <button className="mr-1 text-lg" type="button" onClick={addAction}>
-        <HiOutlinePlus />
-      </button>
-      <button className="text-lg" type="button" onClick={removeAction}>
-        <HiOutlineMinus />
-      </button>
+      <div className="text-lg flex">
+        {index != 0 ? (
+          <button
+            className="mr-1 hover:text-red-600"
+            type="button"
+            onClick={removeAction}
+          >
+            <HiOutlineMinus />
+          </button>
+        ) : (
+          <span className="mr-1">
+            <HiOutlineMinus className="opacity-0" />
+          </span>
+        )}
+        <button type="button" onClick={addAction}>
+          <HiOutlinePlus />
+        </button>
+      </div>
     </div>
   );
 }
@@ -261,7 +285,7 @@ function ConditionValueInput({
               field.type == FieldType.checkbox ? value === 'true' : value
             )
           }
-          className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+          className="flex-grow mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
           {field.optionsWithBlank.map((value, index) => (
             <option key={index} value={value}>
@@ -276,7 +300,7 @@ function ConditionValueInput({
           type="text"
           value={value as string}
           onChange={({ currentTarget: { value } }) => onChange(value)}
-          className="mr-1 p-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 rounded-md"
+          className="flex-grow mr-1 p-1 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 rounded-md"
         />
       );
   }
