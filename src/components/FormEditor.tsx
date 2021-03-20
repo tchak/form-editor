@@ -17,11 +17,12 @@ export function FormEditor() {
           value={page.label}
           autoCorrect="off"
           autoComplete="off"
+          spellCheck="false"
           onChange={() => {}}
         />
       </div>
       <div className="mt-5">
-        <ul className="pb-32" ref={drop}>
+        <ul className="pb-20" ref={drop}>
           {page.content.map((field) => (
             <FormField key={field.id} field={field} />
           ))}

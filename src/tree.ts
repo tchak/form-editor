@@ -92,6 +92,10 @@ export function isField(field: Field | Section): field is Field {
   return field.type != FieldType.section;
 }
 
+export function isLogic(field: Field): boolean {
+  return field.type == FieldType.logic;
+}
+
 export class Field {
   #id: string;
   #type: FieldType;
@@ -151,7 +155,7 @@ export class Field {
   }
 
   get logic(): FieldLogic {
-    if (this.type == FieldType.logic && this.#settings.logic) {
+    if (isLogic(this) && this.#settings.logic) {
       return this.#settings.logic;
     }
     throw new TypeError(`Field #${this.id} is not of type logic`);
