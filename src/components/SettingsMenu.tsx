@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HiOutlineCog } from 'react-icons/hi';
 import { Menu, Switch } from '@headlessui/react';
+import { FormattedMessage, useIntl } from 'react-intl';
 
 import {
   ConditionOperator,
@@ -12,6 +13,7 @@ import {
 } from '../tree';
 
 export function SettingsMenu({ field }: { field: Field | Section }) {
+  const intl = useIntl();
   const [required, setRequired] = useState(field.required);
   const [description, setDescription] = useState(field.description != null);
   const saveRequired = (required: boolean) => {
@@ -26,7 +28,13 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
   const addLogic = () => {
     const logic = new Field({
       type: FieldType.logic,
-      label: `Les conditions pour « ${field.displayLabel} »`,
+      label: intl.formatMessage(
+        {
+          id: 'conditionsFor',
+          defaultMessage: 'Conditions for "{label}"',
+        },
+        { label: field.displayLabel }
+      ),
       logic: {
         conditions: [
           {
@@ -55,7 +63,10 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
             <Menu.Item>
               <div className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                 <Toggle
-                  label="Description"
+                  label={intl.formatMessage({
+                    id: 'description',
+                    defaultMessage: 'Description',
+                  })}
                   checked={description}
                   onChange={saveDescription}
                 />
@@ -64,7 +75,10 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
             <Menu.Item>
               <div className="flex px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                 <Toggle
-                  label="Obligatoire"
+                  label={intl.formatMessage({
+                    id: 'required',
+                    defaultMessage: 'Required',
+                  })}
                   checked={required}
                   onChange={saveRequired}
                 />
@@ -77,7 +91,12 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
                   className="inline-flex items-center text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   onClick={addLogic}
                 >
-                  <span className="flex-1">Logique conditionnelle</span>
+                  <span className="flex-1">
+                    <FormattedMessage
+                      id="logic"
+                      defaultMessage="Conditional logic"
+                    />
+                  </span>
                 </button>
               </Menu.Item>
             )}

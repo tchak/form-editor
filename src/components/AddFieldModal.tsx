@@ -1,9 +1,10 @@
 import React from 'react';
 import { DialogOverlay, DialogContent } from '@reach/dialog';
+import { IntlShape, useIntl } from 'react-intl';
 
 import { Field, Section, FieldType } from '../tree';
 
-const FIELDS = Object.keys(FieldType);
+const FIELDS = Object.keys(FieldType) as FieldType[];
 
 export function AddFieldModal({
   show,
@@ -12,16 +13,26 @@ export function AddFieldModal({
   show: boolean;
   done: (field?: Field | Section) => void;
 }) {
+  const intl = useIntl();
   const createField = (type: FieldType) => {
     if (type == FieldType.section) {
       return new Section({
         type: FieldType.section,
-        label: 'Nouvelle section',
+        label: intl.formatMessage({
+          id: 'newSection',
+          defaultMessage: 'New section',
+        }),
       });
     } else {
       return new Field({
         type,
-        label: 'Nouveau champ',
+        label: intl.formatMessage(
+          {
+            id: 'newField',
+            defaultMessage: 'New field "{type}"',
+          },
+          { type: formatFieldType(intl, type) }
+        ),
       });
     }
   };
@@ -51,9 +62,9 @@ export function AddFieldModal({
               <li key={fieldType}>
                 <button
                   type="button"
-                  onClick={() => done(createField(fieldType as FieldType))}
+                  onClick={() => done(createField(fieldType))}
                 >
-                  {fieldType}
+                  {formatFieldType(intl, fieldType)}
                 </button>
               </li>
             ))}
@@ -62,4 +73,26 @@ export function AddFieldModal({
       </div>
     </DialogOverlay>
   );
+}
+
+function formatFieldType(intl: IntlShape, type: FieldType): string {
+  switch (type) {
+    case FieldType.text:
+      return intl.formatMessage({ id: type, defaultMessage: 'Text' });
+    case FieldType.longtext:
+      return intl.formatMessage({ id: type, defaultMessage: 'Long text' });
+    case FieldType.number:
+      return intl.formatMessage({ id: type, defaultMessage: 'Number' });
+    case FieldType.radio:
+      return intl.formatMessage({ id: type, defaultMessage: 'Select' });
+    case FieldType.checkbox:
+      return intl.formatMessage({ id: type, defaultMessage: 'Checkbox' });
+    case FieldType.section:
+      return intl.formatMessage({ id: type, defaultMessage: 'Section' });
+    case FieldType.logic:
+      return intl.formatMessage({
+        id: type,
+        defaultMessage: 'Conditional logic',
+      });
+  }
 }

@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { HiOutlineMinus, HiOutlinePlus } from 'react-icons/hi';
+import { FormattedMessage, useIntl, IntlShape } from 'react-intl';
+
 import {
   Field,
   ConditionExpression,
@@ -50,6 +52,7 @@ function ConditionExpressionInput({
   field: Field;
   expression: ConditionExpression;
 }) {
+  const intl = useIntl();
   const [logicalOperator, setLogicalOperator] = useState(field.logic.operator);
   const [operator, setOperator] = useState(expression.operator);
   const [target, setTarget] = useState(expression.targetId);
@@ -110,19 +113,25 @@ function ConditionExpressionInput({
           style={{ width: '82px' }}
           className="mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
         >
-          <option value={LogicalOperator.AND}>Et</option>
-          <option value={LogicalOperator.OR}>Ou</option>
+          <option value={LogicalOperator.AND}>
+            {intl.formatMessage({ id: 'And', defaultMessage: 'And' })}
+          </option>
+          <option value={LogicalOperator.OR}>
+            {intl.formatMessage({ id: 'Or', defaultMessage: 'Or' })}
+          </option>
         </select>
       ) : (
         <span
           style={{ width: '82px' }}
           className="mr-1 pr-1 text-sm font-medium text-gray-800 text-right"
         >
-          {index == 0
-            ? 'Si'
-            : field.logic.operator == LogicalOperator.AND
-            ? 'Et'
-            : 'Ou'}
+          {index == 0 ? (
+            <FormattedMessage id="When" defaultMessage="When" />
+          ) : field.logic.operator == LogicalOperator.AND ? (
+            <FormattedMessage id="And" defaultMessage="And" />
+          ) : (
+            <FormattedMessage id="Or" defaultMessage="Or" />
+          )}
         </span>
       )}
       <select
@@ -146,7 +155,7 @@ function ConditionExpressionInput({
         >
           {targetField.operators.map((operator) => (
             <option key={operator} value={operator}>
-              {operator}
+              {formatOperator(intl, operator)}
             </option>
           ))}
         </select>
@@ -189,6 +198,7 @@ function ActionExpressionInput({
   index: number;
   expression: ActionExpression;
 }) {
+  const intl = useIntl();
   const [action, setAction] = useState(expression.action);
   const [target, setTarget] = useState(expression.targetId);
 
@@ -221,15 +231,29 @@ function ActionExpressionInput({
         className="mr-1 pr-1 text-sm font-medium text-gray-800 w-20 text-right"
         style={{ width: '82px' }}
       >
-        {index == 0 ? 'Alors' : 'Et'}
+        {index == 0 ? (
+          <FormattedMessage id="Then" defaultMessage="Then" />
+        ) : (
+          <FormattedMessage id="And" defaultMessage="And" />
+        )}
       </span>
       <select
         value={action}
         onChange={({ currentTarget: { value } }) => saveAction(value as Action)}
         className="w-60 mr-1 py-1 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
       >
-        <option value={Action.hide}>Cacher</option>
-        <option value={Action.require}>Rendre obligatoire</option>
+        <option value={Action.hide}>
+          {intl.formatMessage({
+            id: Action.hide,
+            defaultMessage: 'Hide block',
+          })}
+        </option>
+        <option value={Action.require}>
+          {intl.formatMessage({
+            id: Action.require,
+            defaultMessage: 'Require answer',
+          })}
+        </option>
       </select>
       <select
         value={target}
@@ -319,4 +343,38 @@ function keyFromExpression(
   return [index, expression.action, expression.targetId]
     .filter((key) => key)
     .join('-');
+}
+
+function formatOperator(intl: IntlShape, operator: ConditionOperator): string {
+  switch (operator) {
+    case ConditionOperator.IS:
+      return intl.formatMessage({ id: operator, defaultMessage: 'is' });
+    case ConditionOperator.IS_NOT:
+      return intl.formatMessage({ id: operator, defaultMessage: 'is not' });
+    case ConditionOperator.IS_EMPTY:
+      return intl.formatMessage({ id: operator, defaultMessage: 'is empty' });
+    case ConditionOperator.IS_NOT_EMPTY:
+      return intl.formatMessage({
+        id: operator,
+        defaultMessage: 'is not empty',
+      });
+    case ConditionOperator.IS_AFTER:
+      return intl.formatMessage({ id: operator, defaultMessage: 'is after' });
+    case ConditionOperator.IS_BEFORE:
+      return intl.formatMessage({ id: operator, defaultMessage: 'is before' });
+    case ConditionOperator.STARTS_WITH:
+      return intl.formatMessage({
+        id: operator,
+        defaultMessage: 'starts with',
+      });
+    case ConditionOperator.ENDS_WITH:
+      return intl.formatMessage({ id: operator, defaultMessage: 'ends with' });
+    case ConditionOperator.CONTAINS:
+      return intl.formatMessage({ id: operator, defaultMessage: 'contains' });
+    case ConditionOperator.CONTAINS_NOT:
+      return intl.formatMessage({
+        id: operator,
+        defaultMessage: 'doesn’t contain',
+      });
+  }
 }
