@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import {
   Formik,
-  Form as FormikForm,
+  Form,
   Field as FormikField,
   ErrorMessage,
   useFormikContext,
@@ -21,12 +21,10 @@ export function FormPreview() {
         console.log(values);
       }}
     >
-      <FormikForm>
+      <Form>
         <fieldset>
           <legend className="mb-5">
-            <h1 className="text-blue-500 border-none font-bold text-4xl pl-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded">
-              {page.label}
-            </h1>
+            <h1 className="text-blue-500 font-bold text-4xl">{page.label}</h1>
           </legend>
           <div className="divide-y divide-gray-200">
             {page.publicContent.map((field) => (
@@ -51,7 +49,7 @@ export function FormPreview() {
             </button>
           </div>
         </div>
-      </FormikForm>
+      </Form>
     </Formik>
   );
 }
@@ -77,13 +75,11 @@ function FormPreviewField({ field }: { field: Field | Section }) {
 function FormPreviewSection({ field }: { field: Section }) {
   return (
     <fieldset>
-      <legend className="mb-4 text-2xl font-bold flex-auto text-blue-500 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10">
+      <legend className="mb-4 text-2xl font-bold flex-auto text-blue-500">
         {field.sectionIndex} {field.label}
       </legend>
       {field.description && (
-        <div className="text-black border-none p-0 mb-2 text-xs focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10">
-          {field.description}
-        </div>
+        <div className="mb-2 text-xs">{field.description}</div>
       )}
       <div className="divide-y divide-gray-200">
         {field.publicContent.map((field) => (
@@ -121,6 +117,7 @@ function FormPreviewText({ field }: { field: Field }) {
 }
 
 function FormPreviewCheckbox({ field }: { field: Field }) {
+  const { values } = useFormikContext<Record<string, ConditionValue>>();
   return (
     <FormikField
       className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
@@ -128,6 +125,7 @@ function FormPreviewCheckbox({ field }: { field: Field }) {
       type="checkbox"
       name={field.id}
       id={`for-${field.id}`}
+      validate={field.getValidator(values)}
     />
   );
 }
@@ -145,9 +143,7 @@ function FormPreviewRadio({ field }: { field: Field }) {
             value={option}
             validate={field.getValidator(values)}
           />
-          <span className="ml-2 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10">
-            {option}
-          </span>
+          <span className="ml-2">{option}</span>
         </label>
       ))}
     </div>
@@ -190,7 +186,7 @@ function FormPreviewLabel({
       <div className="flex">
         <label
           htmlFor={`for-${field.id}`}
-          className="font-semibold text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
+          className="font-semibold text-blue-500 mb-1"
         >
           {field.sectionIndex} {field.label}
         </label>
@@ -200,9 +196,7 @@ function FormPreviewLabel({
       </div>
 
       {field.description && (
-        <div className="text-black border-none p-0 mb-2 text-xs focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10">
-          {field.description}
-        </div>
+        <div className="mb-2 text-xs">{field.description}</div>
       )}
       {children}
     </div>
