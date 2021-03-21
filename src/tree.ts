@@ -41,6 +41,10 @@ export enum ConditionOperator {
   IS_AFTER = 'IS_AFTER',
   STARTS_WITH = 'STARTS_WITH',
   ENDS_WITH = 'ENDS_WITH',
+  GREATER_THEN = 'GREATER_THEN',
+  GREATER_THEN_EQUAL = 'GREATER_THEN_EQUAL',
+  LESS_THEN = 'LESS_THEN',
+  LESS_THEN_EQUAL = 'LESS_THEN_EQUAL',
 }
 
 export enum Action {
@@ -311,6 +315,14 @@ export class Field {
           ConditionOperator.STARTS_WITH,
           ConditionOperator.ENDS_WITH,
         ];
+      case FieldType.number:
+        return [
+          ...base,
+          ConditionOperator.GREATER_THEN,
+          ConditionOperator.GREATER_THEN_EQUAL,
+          ConditionOperator.LESS_THEN,
+          ConditionOperator.LESS_THEN_EQUAL,
+        ];
       default:
         return base;
     }
@@ -570,6 +582,14 @@ function computeOperator(
       return `${left}`.startsWith(`${right}`);
     case ConditionOperator.ENDS_WITH:
       return `${left}`.endsWith(`${right}`);
+    case ConditionOperator.GREATER_THEN:
+      return left > right;
+    case ConditionOperator.GREATER_THEN_EQUAL:
+      return left >= right;
+    case ConditionOperator.LESS_THEN:
+      return left < right;
+    case ConditionOperator.LESS_THEN_EQUAL:
+      return left <= right;
     default:
       return false;
   }

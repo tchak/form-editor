@@ -14,6 +14,10 @@ export const messages = {
   IS_AFTER: 'est après',
   STARTS_WITH: 'commence avec',
   ENDS_WITH: 'se termine avec',
+  GREATER_THEN: '>',
+  GREATER_THEN_EQUAL: '>=',
+  LESS_THEN: '<',
+  LESS_THEN_EQUAL: '<=',
 
   hide: 'Cacher',
   require: 'Rendre obligatoire',

@@ -52,6 +52,11 @@ const defaultPage: FieldSchema = {
               type: FieldType.text,
             },
             {
+              id: 'carte-electeur',
+              label: 'Il a sa carte d’électeur ?',
+              type: FieldType.text,
+            },
+            {
               label: '42',
               type: FieldType.logic,
               logic: {
@@ -64,6 +69,21 @@ const defaultPage: FieldSchema = {
                 ],
                 operator: LogicalOperator.AND,
                 actions: [{ action: Action.hide, targetId: 'grande-question' }],
+              },
+            },
+            {
+              label: 'Est-il mageur ?',
+              type: FieldType.logic,
+              logic: {
+                conditions: [
+                  {
+                    operator: ConditionOperator.LESS_THEN,
+                    targetId: 'age-enfant',
+                    value: 18,
+                  },
+                ],
+                operator: LogicalOperator.AND,
+                actions: [{ action: Action.hide, targetId: 'carte-electeur' }],
               },
             },
           ],

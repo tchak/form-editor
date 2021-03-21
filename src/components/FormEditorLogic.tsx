@@ -376,5 +376,25 @@ function formatOperator(intl: IntlShape, operator: ConditionOperator): string {
         id: operator,
         defaultMessage: 'doesn’t contain',
       });
+    case ConditionOperator.GREATER_THEN:
+      return intl.formatMessage({
+        id: operator,
+        defaultMessage: '>',
+      });
+    case ConditionOperator.GREATER_THEN_EQUAL:
+      return intl.formatMessage({
+        id: operator,
+        defaultMessage: '>=',
+      });
+    case ConditionOperator.LESS_THEN:
+      return intl.formatMessage({
+        id: operator,
+        defaultMessage: '<',
+      });
+    case ConditionOperator.LESS_THEN_EQUAL:
+      return intl.formatMessage({
+        id: operator,
+        defaultMessage: '<=',
+      });
   }
 }
