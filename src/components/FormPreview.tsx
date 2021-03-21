@@ -187,14 +187,12 @@ function FormPreviewLabel({
       <div className="flex">
         <label
           htmlFor={`for-${field.id}`}
-          className="font-semibold flex-auto text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
+          className="font-semibold text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
         >
           {field.sectionIndex} {field.label}
         </label>
         {(field.required || field.isRequired(values)) && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-800">
-            *
-          </span>
+          <span className="ml-2 font-medium text-2xl text-red-800">*</span>
         )}
       </div>
 

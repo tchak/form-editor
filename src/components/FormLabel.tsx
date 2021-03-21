@@ -8,6 +8,7 @@ import {
 } from 'react-icons/hi';
 import { useDrag, useDrop } from 'react-dnd';
 
+import { useAutosize } from '../autosize';
 import { Field, Section, isLogic, isSection } from '../tree';
 import { SettingsMenu } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
@@ -19,6 +20,8 @@ export function FormLabel({
   field: Field;
   children: ReactNode;
 }) {
+  const labelRef = useAutosize();
+  const descriptionRef = useAutosize<HTMLTextAreaElement>();
   const [showAddField, setShowAddField] = useState(false);
   const [label, setLabel] = useState(field.label);
   const [description, setDescription] = useState(field.description);
@@ -135,18 +138,17 @@ export function FormLabel({
           <input
             className={`${
               isSection(field) ? 'text-2xl font-bold' : 'font-semibold'
-            } flex-auto text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
+            } text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
             autoCorrect="off"
             autoComplete="off"
             spellCheck="false"
+            ref={labelRef}
             type="text"
             value={label}
             onChange={({ currentTarget: { value } }) => saveLabel(value)}
           />
           {field.required && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-800">
-              *
-            </span>
+            <span className="ml-2 font-medium text-2xl text-red-800">*</span>
           )}
         </div>
 
@@ -159,6 +161,7 @@ export function FormLabel({
             autoCorrect="off"
             autoComplete="off"
             spellCheck="false"
+            ref={descriptionRef}
           ></textarea>
         )}
         {children}
