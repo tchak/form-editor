@@ -19,8 +19,9 @@ export function MenuButtonTooltip({
 }: {
   children: ReactNode;
   label: {
-    id: string;
+    id?: string;
     defaultMessage: string;
+    description?: string;
   };
 }) {
   const intl = useIntl();

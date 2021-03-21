@@ -140,12 +140,21 @@ export function FormEditorLabel({
           <HiOutlinePlus />
         </SideMenuButton>
 
-        <div
-          ref={drag}
-          className="hover:bg-gray-200 rounded flex items-center justify-center h-6 w-6"
+        <MenuButtonTooltip
+          label={{
+            id: 'move',
+            defaultMessage: 'Move Field',
+            description:
+              'Tooltip on a drag handle to move a selected Field by Drag & Drop',
+          }}
         >
-          <HiOutlineDotsVertical />
-        </div>
+          <div
+            ref={drag}
+            className="hover:bg-gray-200 rounded flex items-center justify-center h-6 w-6 cursor-move"
+          >
+            <HiOutlineDotsVertical />
+          </div>
+        </MenuButtonTooltip>
 
         <AddFieldModal
           show={showAddField}
