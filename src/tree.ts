@@ -21,6 +21,8 @@ export interface FieldSchema {
   options?: string[];
   content?: FieldSchema[];
   logic?: FieldLogic;
+  matrix?: boolean;
+  matrixAddLabel?: string;
 }
 
 export enum LogicalOperator {
@@ -46,7 +48,13 @@ export enum Action {
   require = 'require',
 }
 
-export type ConditionValue = string | number | boolean | Date | string[];
+export type ConditionValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | string[]
+  | Record<string, ConditionValue>[];
 
 export interface ConditionExpression {
   operator: ConditionOperator;
@@ -75,6 +83,8 @@ interface FieldSettings {
   required?: boolean;
   options?: string[];
   logic?: FieldLogic;
+  matrix?: boolean;
+  matrixAddLabel?: string;
 }
 
 export function isUnaryOperator(operator: ConditionOperator) {
@@ -96,6 +106,10 @@ export function isLogic(field: Field): boolean {
   return field.type == FieldType.logic;
 }
 
+export function isMatrix(field: Field | Section): field is Section {
+  return isSection(field) && field.matrix;
+}
+
 export class Field {
   #id: string;
   #type: FieldType;
@@ -113,6 +127,8 @@ export class Field {
       options: field.options,
       unit: field.unit,
       logic: field.logic,
+      matrix: field.matrix,
+      matrixAddLabel: field.matrixAddLabel,
     };
     this.#emitter = emitter ?? parent?.emitter;
     this.#parent = parent;
@@ -161,6 +177,10 @@ export class Field {
     throw new TypeError(`Field #${this.id} is not of type logic`);
   }
 
+  get matrix(): boolean {
+    return this.type == FieldType.section && !!this.#settings.matrix;
+  }
+
   get emitter(): FieldEmitter {
     if (this.#emitter) {
       return this.#emitter;
@@ -194,11 +214,15 @@ export class Field {
     return this.index == this.parent.content.length - 1;
   }
 
-  get sectionIndex() {
+  get sectionIndex(): string {
     if (this.#parent) {
       const index = this.#parent.content
         .filter(({ type }) => type == FieldType.section)
         .indexOf(this);
+      const parentSectionIndex = this.#parent.sectionIndex;
+      if (parentSectionIndex) {
+        return index != -1 ? `${parentSectionIndex}${index + 1}.` : '';
+      }
       return index != -1 ? `${index + 1}.` : '';
     }
     return '';
@@ -211,6 +235,13 @@ export class Field {
     return `Champ "${this.type}" sans nom`;
   }
 
+  get matrixAddLabel(): string {
+    if (!this.matrix) {
+      return '';
+    }
+    return this.#settings.matrixAddLabel ?? 'Ajouter un block';
+  }
+
   get defaultValue() {
     switch (this.type) {
       case FieldType.checkbox:
@@ -221,6 +252,27 @@ export class Field {
       default:
         return '';
     }
+  }
+
+  get closestMatrix(): Section | undefined {
+    if (this.#parent) {
+      if (isMatrix(this.parent) && this.parent.matrix) {
+        return this.parent;
+      }
+      return this.parent.closestMatrix;
+    }
+  }
+
+  htmlInputName(index = 0): string {
+    const matrix = this.closestMatrix;
+    if (matrix) {
+      return `${matrix.id}.${index}.${this.id}`;
+    }
+    return this.id;
+  }
+
+  htmlInputId(index = 0) {
+    return `input-${this.htmlInputName(index)}`;
   }
 
   get siblings() {
@@ -347,6 +399,8 @@ export class Field {
       required: this.required,
       unit: this.#settings.unit,
       logic: this.#settings.logic,
+      matrix: this.#settings.matrix,
+      matrixAddLabel: this.#settings.matrixAddLabel,
     };
   }
 }
@@ -373,14 +427,28 @@ export class Section extends Field {
     return this.content.filter(({ type }) => type != FieldType.logic);
   }
 
-  get publicIds(): string[] {
+  get publicFields(): (Field | Section)[] {
     return this.publicContent.flatMap((field) =>
-      isSection(field) ? field.publicIds : field.id
+      isSection(field) && !field.matrix ? field.publicFields : [field]
     );
   }
 
   get initialValues(): Record<string, ConditionValue> {
-    return Object.fromEntries(this.publicIds.map((id) => [id, '']));
+    return Object.fromEntries(
+      this.publicFields.map((field) =>
+        isMatrix(field) ? [field.id, [field.initialValues]] : [field.id, '']
+      )
+    );
+  }
+
+  matrixValues(
+    values: Record<string, ConditionValue>
+  ): Record<string, ConditionValue>[] {
+    const value = values[this.id];
+    if (Array.isArray(value)) {
+      return value as Record<string, ConditionValue>[];
+    }
+    return [];
   }
 
   insert(field: Field | Section, atIndex: number) {
@@ -499,7 +567,7 @@ function contains(list: ConditionValue, value: ConditionValue) {
     return false;
   }
   if (Array.isArray(list)) {
-    return list.includes(`${value}`);
+    return (list as string[]).includes(`${value}`);
   } else if (typeof list == 'string') {
     return list.includes(`${value}`);
   }

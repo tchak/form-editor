@@ -1,7 +1,14 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 
-import { FieldSchema, FieldType, Page } from './tree';
+import {
+  Action,
+  ConditionOperator,
+  FieldSchema,
+  FieldType,
+  LogicalOperator,
+  Page,
+} from './tree';
 
 const defaultPage: FieldSchema = {
   type: FieldType.section,
@@ -21,21 +28,124 @@ const defaultPage: FieldSchema = {
           label: 'Prénom',
           type: FieldType.text,
         },
+        {
+          label: 'Avez-vous des enfants ?',
+          type: FieldType.section,
+          matrix: true,
+          content: [
+            {
+              label: 'Nom',
+              type: FieldType.text,
+            },
+            {
+              label: 'Prénom',
+              type: FieldType.text,
+            },
+            {
+              label: 'Age',
+              type: FieldType.number,
+            },
+          ],
+        },
       ],
     },
     {
+      id: 'islamo-gauchiste',
       label: 'Étes vous islamo-gauchiste ?',
       type: FieldType.checkbox,
-      required: true,
     },
     {
+      id: 'point',
       label: 'À quel point ?',
       type: FieldType.radio,
       options: ['Un peu', 'Beaucoup', 'Complètement'],
+      required: true,
     },
     {
+      id: 'la-vie',
       label: 'Racontez nous votre vie !',
       type: FieldType.longtext,
+    },
+    {
+      label: 'Racontez la vie',
+      type: FieldType.logic,
+      logic: {
+        operator: LogicalOperator.OR,
+        conditions: [
+          {
+            operator: ConditionOperator.IS_NOT,
+            targetId: 'islamo-gauchiste',
+            value: true,
+          },
+          {
+            operator: ConditionOperator.IS_NOT,
+            targetId: 'point',
+            value: 'Complètement',
+          },
+        ],
+        actions: [{ action: Action.hide, targetId: 'la-vie' }],
+      },
+    },
+    {
+      label: 'Menu déjeuner',
+      type: FieldType.section,
+      content: [
+        {
+          id: 'entree-ou-dessert',
+          label: 'Vous prendrez un dessert ou une entrée ?',
+          type: FieldType.radio,
+          options: ['Dessert', 'Entrée'],
+          required: true,
+        },
+        {
+          id: 'desserts',
+          label: 'Desserts',
+          type: FieldType.radio,
+          options: ['Tarte Tatin', 'Camembert', 'Île flottante'],
+          required: true,
+        },
+        {
+          id: 'entrees',
+          label: 'Entrées',
+          type: FieldType.radio,
+          options: [
+            'Velouté de poireau',
+            'Carpaccio de betteraves',
+            'Salade de papaye',
+          ],
+          required: true,
+        },
+        {
+          label: 'Choisir le dessert',
+          type: FieldType.logic,
+          logic: {
+            conditions: [
+              {
+                operator: ConditionOperator.IS_NOT,
+                targetId: 'entree-ou-dessert',
+                value: 'Dessert',
+              },
+            ],
+            operator: LogicalOperator.AND,
+            actions: [{ action: Action.hide, targetId: 'desserts' }],
+          },
+        },
+        {
+          label: 'Choisir l’entrée',
+          type: FieldType.logic,
+          logic: {
+            conditions: [
+              {
+                operator: ConditionOperator.IS_NOT,
+                targetId: 'entree-ou-dessert',
+                value: 'Entrée',
+              },
+            ],
+            operator: LogicalOperator.AND,
+            actions: [{ action: Action.hide, targetId: 'entrees' }],
+          },
+        },
+      ],
     },
   ],
 };
@@ -66,8 +176,9 @@ export function resetPage() {
   location.reload();
 }
 
+const initialData = new Page(getDefaultPage());
+
 export function usePage(): Page {
-  const initialData = useMemo(() => new Page(getDefaultPage()), []);
   const { data, refetch } = useQuery('form', () => initialData, {
     initialData,
   });

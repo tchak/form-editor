@@ -3,13 +3,22 @@ import {
   Formik,
   Form,
   Field as FormikField,
+  FieldArray,
   ErrorMessage,
   useFormikContext,
 } from 'formik';
 import { FormattedMessage } from 'react-intl';
+import { HiOutlinePlusCircle } from 'react-icons/hi';
 
 import { usePage } from '../hooks';
-import { Field, Section, isSection, FieldType, ConditionValue } from '../tree';
+import {
+  Field,
+  Section,
+  isSection,
+  FieldType,
+  ConditionValue,
+  isMatrix,
+} from '../tree';
 
 export function FormPreview() {
   const page = usePage();
@@ -26,11 +35,10 @@ export function FormPreview() {
           <legend className="mb-5">
             <h1 className="text-blue-500 font-bold text-4xl">{page.label}</h1>
           </legend>
-          <div className="divide-y divide-gray-200">
-            {page.publicContent.map((field) => (
-              <FormPreviewField key={field.id} field={field} />
-            ))}
-          </div>
+
+          {page.publicContent.map((field) => (
+            <FormPreviewField key={field.id} field={field} />
+          ))}
         </fieldset>
 
         <div className="py-5">
@@ -54,14 +62,23 @@ export function FormPreview() {
   );
 }
 
-function FormPreviewField({ field }: { field: Field | Section }) {
+function FormPreviewField({
+  field,
+  index,
+}: {
+  field: Field | Section;
+  index?: number;
+}) {
+  if (isMatrix(field)) {
+    return <FormPreviewMatrix field={field} />;
+  }
   if (isSection(field)) {
-    return <FormPreviewSection field={field} />;
+    return <FormPreviewSection field={field} index={index} />;
   }
   return (
-    <FormPreviewLabel field={field}>
+    <FormPreviewLabel field={field} index={index}>
       <div className="mb-2 w-full">
-        <FormPreviewInput field={field} />
+        <FormPreviewInput field={field} index={index} />
         <ErrorMessage
           component="p"
           name={field.id}
@@ -72,7 +89,13 @@ function FormPreviewField({ field }: { field: Field | Section }) {
   );
 }
 
-function FormPreviewSection({ field }: { field: Section }) {
+function FormPreviewSection({
+  field,
+  index,
+}: {
+  field: Section;
+  index?: number;
+}) {
   return (
     <fieldset>
       <legend className="mb-4 text-2xl font-bold flex-auto text-blue-500">
@@ -81,33 +104,32 @@ function FormPreviewSection({ field }: { field: Section }) {
       {field.description && (
         <div className="mb-2 text-xs">{field.description}</div>
       )}
-      <div className="divide-y divide-gray-200">
-        {field.publicContent.map((field) => (
-          <FormPreviewField key={field.id} field={field} />
-        ))}
-      </div>
+
+      {field.publicContent.map((field) => (
+        <FormPreviewField key={field.id} field={field} index={index} />
+      ))}
     </fieldset>
   );
 }
 
-function FormPreviewInput({ field }: { field: Field }) {
+function FormPreviewInput({ field, index }: { field: Field; index?: number }) {
   if (field.type == FieldType.checkbox) {
-    return <FormPreviewCheckbox field={field} />;
+    return <FormPreviewCheckbox field={field} index={index} />;
   } else if (field.type == FieldType.radio) {
-    return <FormPreviewRadio field={field} />;
+    return <FormPreviewRadio field={field} index={index} />;
   }
-  return <FormPreviewText field={field} />;
+  return <FormPreviewText field={field} index={index} />;
 }
 
-function FormPreviewText({ field }: { field: Field }) {
+function FormPreviewText({ field, index }: { field: Field; index?: number }) {
   const { values } = useFormikContext<Record<string, ConditionValue>>();
   return (
     <FormikField
       className="w-full text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
       as={asFromFieldType(field.type)}
       type={htmlTypeFromFieldType(field.type)}
-      name={field.id}
-      id={`for-${field.id}`}
+      name={field.htmlInputName(index)}
+      id={field.htmlInputId(index)}
       validate={field.getValidator(values)}
       autoCorrect="off"
       autoComplete="off"
@@ -116,29 +138,35 @@ function FormPreviewText({ field }: { field: Field }) {
   );
 }
 
-function FormPreviewCheckbox({ field }: { field: Field }) {
+function FormPreviewCheckbox({
+  field,
+  index,
+}: {
+  field: Field;
+  index?: number;
+}) {
   const { values } = useFormikContext<Record<string, ConditionValue>>();
   return (
     <FormikField
       className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
       as="input"
       type="checkbox"
-      name={field.id}
-      id={`for-${field.id}`}
+      name={field.htmlInputName(index)}
+      id={`for-${field.htmlInputId(index)}`}
       validate={field.getValidator(values)}
     />
   );
 }
 
-function FormPreviewRadio({ field }: { field: Field }) {
+function FormPreviewRadio({ field, index }: { field: Field; index?: number }) {
   const { values } = useFormikContext<Record<string, ConditionValue>>();
   return (
-    <div role="group" aria-labelledby={`for-${field.id}`}>
+    <div role="group" aria-labelledby={field.htmlInputId(index)}>
       {field.options.map((option, index) => (
         <label key={index} className="flex items-center">
           <FormikField
             className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
-            name={field.id}
+            name={field.htmlInputName(index)}
             type="radio"
             value={option}
             validate={field.getValidator(values)}
@@ -172,9 +200,11 @@ function asFromFieldType(type: FieldType): string {
 
 function FormPreviewLabel({
   field,
+  index,
   children,
 }: {
   field: Field;
+  index?: number;
   children: ReactNode;
 }) {
   const { values } = useFormikContext<Record<string, ConditionValue>>();
@@ -185,7 +215,7 @@ function FormPreviewLabel({
     <div className="flex flex-col flex-grow pt-4 mb-4">
       <div className="flex">
         <label
-          htmlFor={`for-${field.id}`}
+          htmlFor={field.htmlInputId(index)}
           className="font-semibold text-blue-500 mb-1"
         >
           {field.sectionIndex} {field.label}
@@ -200,5 +230,39 @@ function FormPreviewLabel({
       )}
       {children}
     </div>
+  );
+}
+
+function FormPreviewMatrix({ field }: { field: Section }) {
+  return (
+    <FieldArray name={field.htmlInputName()}>
+      {({ push, form }) => (
+        <fieldset>
+          <legend className="mb-4 text-2xl font-bold flex-auto text-blue-500">
+            {field.label}
+          </legend>
+          {field.description && (
+            <div className="mb-2 text-xs">{field.description}</div>
+          )}
+          {field.matrixValues(form.values).map((_, index) => (
+            <div key={index}>
+              {field.publicContent.map((field) => (
+                <FormPreviewField key={field.id} index={index} field={field} />
+              ))}
+            </div>
+          ))}
+          <div className="flex justify-start">
+            <button
+              type="button"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              onClick={() => push(field.initialValues)}
+            >
+              <HiOutlinePlusCircle className="-ml-0.5 mr-2 h-4 w-4" />
+              {field.matrixAddLabel}
+            </button>
+          </div>
+        </fieldset>
+      )}
+    </FieldArray>
   );
 }
