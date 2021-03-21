@@ -1,12 +1,10 @@
 import React from 'react';
 
-import { useSectionDrop } from '../field-dnd';
 import { usePage } from '../hooks';
 import { FormEditorField } from './FormEditorField';
 
 export function FormEditor() {
   const page = usePage();
-  const drop = useSectionDrop();
 
   return (
     <div>
@@ -21,7 +19,7 @@ export function FormEditor() {
           onChange={() => {}}
         />
       </div>
-      <ul className="pb-20 mt-5" ref={drop}>
+      <ul className="pb-20 mt-5">
         {page.content.map((field) => (
           <FormEditorField key={field.id} field={field} />
         ))}

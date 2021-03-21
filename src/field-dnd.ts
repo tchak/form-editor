@@ -10,23 +10,18 @@ import { Field, Section } from './tree';
 
 const DragItemType = 'Field';
 
-export function useSectionDrop() {
-  const [, drop] = useDrop(() => ({ accept: DragItemType }));
-  return drop;
-}
-
 export function useSectionInsertDrop(field: Section) {
   const [, drop] = useDrop(
     () => ({
       accept: DragItemType,
-      canDrop: () => false,
-      hover(item: Field | Section) {
-        if (item != field && !field.content.includes(item)) {
-          field.insert(item, field.content.length);
-        }
+      canDrop(item: Field | Section) {
+        return item != field && !field.content.includes(item);
+      },
+      drop(item: Field | Section) {
+        field.insert(item, field.content.length);
       },
     }),
-    [field]
+    [field.id]
   );
 
   return drop;
@@ -47,27 +42,21 @@ export function useFieldDrag(
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
-      end(item, monitor) {
-        const didDrop = monitor.didDrop();
-        if (!didDrop) {
-        }
-      },
     }),
-    [field]
+    [field.id]
   );
 
   const [, drop] = useDrop(
     () => ({
       accept: DragItemType,
-      canDrop: () => false,
-      hover(item: Field | Section) {
-        if (item.id !== field.id) {
-          console.log('hover', item.label);
-          item.moveAfter(field);
-        }
+      canDrop(item: Field) {
+        return item.id != field.id;
+      },
+      drop(item: Field) {
+        item.moveAfter(field);
       },
     }),
-    [field]
+    [field.id]
   );
 
   return [drag, drop, preview, props];
