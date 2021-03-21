@@ -303,7 +303,7 @@ export class Field {
 
   getValidator(values: Record<string, ConditionValue>) {
     return (value: ConditionValue) => {
-      if ((this.required || this.isRequired(values)) && empty(value)) {
+      if (this.isRequired(values) && empty(value)) {
         return 'Required';
       }
     };
@@ -322,6 +322,9 @@ export class Field {
   }
 
   isRequired(values: Record<string, ConditionValue>) {
+    if (this.required) {
+      return true;
+    }
     const logicFields = this.siblingLogics.filter(({ logic }) =>
       logic.actions.find(
         ({ targetId, action }) =>

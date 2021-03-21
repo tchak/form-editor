@@ -191,7 +191,7 @@ function FormPreviewLabel({
         >
           {field.sectionIndex} {field.label}
         </label>
-        {(field.required || field.isRequired(values)) && (
+        {field.isRequired(values) && (
           <span className="ml-2 font-medium text-2xl text-red-800">*</span>
         )}
       </div>
