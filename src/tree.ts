@@ -186,6 +186,14 @@ export class Field {
     return -1;
   }
 
+  get first(): boolean {
+    return this.index == 0;
+  }
+
+  get last(): boolean {
+    return this.index == this.parent.content.length - 1;
+  }
+
   get sectionIndex() {
     if (this.#parent) {
       const index = this.#parent.content
@@ -274,6 +282,18 @@ export class Field {
 
   moveAfter(field: Field | Section) {
     field.parent.insert(this, field.index);
+  }
+
+  moveUp() {
+    if (!this.first) {
+      this.parent.insert(this, this.index - 1);
+    }
+  }
+
+  moveDown() {
+    if (!this.last) {
+      this.parent.insert(this, this.index + 1);
+    }
   }
 
   update(input: Partial<FieldSettings>) {

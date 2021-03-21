@@ -3,6 +3,8 @@ import {
   HiOutlineDotsVertical,
   HiOutlineTrash,
   HiOutlinePlus,
+  HiOutlineChevronUp,
+  HiOutlineChevronDown,
 } from 'react-icons/hi';
 import { useDrag, useDrop } from 'react-dnd';
 
@@ -63,11 +65,29 @@ export function FormLabel({
   );
 
   return (
-    <li ref={preview} className="-ml-28 mb-5 flex group">
+    <li ref={preview} className="-ml-40 mb-5 flex group">
       <div
         ref={drop}
-        className="flex text-lg text-gray-600 w-28 pt-3 opacity-0 group-hover:opacity-100 transition duration-150 ease-in-out"
+        className="flex justify-end text-lg text-gray-600 w-40 pt-3 opacity-0 group-hover:opacity-100 transition duration-150 ease-in-out"
       >
+        {!field.first && (
+          <button
+            type="button"
+            className="hover:bg-gray-200 rounded p-1 h-6 w-6"
+            onClick={() => field.moveUp()}
+          >
+            <HiOutlineChevronUp />
+          </button>
+        )}
+        {!field.last && (
+          <button
+            type="button"
+            className="hover:bg-gray-200 rounded p-1 h-6 w-6"
+            onClick={() => field.moveDown()}
+          >
+            <HiOutlineChevronDown />
+          </button>
+        )}
         {!isLogic(field) && <SettingsMenu field={field} />}
         <button
           type="button"
