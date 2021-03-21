@@ -1,6 +1,6 @@
 import React from 'react';
 import { DialogOverlay, DialogContent } from '@reach/dialog';
-import { IntlShape, useIntl } from 'react-intl';
+import { FormattedMessage, IntlShape, useIntl } from 'react-intl';
 import {
   HiOutlineVariable,
   HiOutlineHashtag,
@@ -113,7 +113,7 @@ export function AddFieldModal({
               className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:col-start-2 sm:text-sm"
               onClick={close}
             >
-              Cancel
+              <FormattedMessage id="Cancel" defaultMessage="Cancel" />
             </button>
           </div>
         </DialogContent>

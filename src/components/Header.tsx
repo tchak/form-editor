@@ -4,6 +4,7 @@ import {
   HiOutlineArrowNarrowLeft,
   HiOutlineRefresh,
 } from 'react-icons/hi';
+import { FormattedMessage } from 'react-intl';
 
 export function Header({
   preview,
@@ -25,7 +26,10 @@ export function Header({
             onClick={onPreview}
           >
             <HiOutlineArrowNarrowLeft className="-ml-0.5 mr-2 h-4 w-4" />
-            Back to editor
+            <FormattedMessage
+              id="backToEditor"
+              defaultMessage="Back to editor"
+            />
           </button>
         )}
         {!preview && (
@@ -35,7 +39,7 @@ export function Header({
             onClick={onPreview}
           >
             <HiOutlineEye className="-ml-0.5 mr-2 h-4 w-4" />
-            Preview
+            <FormattedMessage id="preview" defaultMessage="Preview" />
           </button>
         )}
         {!preview && (
@@ -45,7 +49,7 @@ export function Header({
             onClick={onReset}
           >
             <HiOutlineRefresh className="-ml-0.5 mr-2 h-4 w-4" />
-            Reset
+            <FormattedMessage id="reset" defaultMessage="Reset" />
           </button>
         )}
       </div>

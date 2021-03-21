@@ -33,4 +33,10 @@ export const messages = {
   required: 'Obligatoire',
 
   conditionsFor: 'Les conditions pour « {label} »',
+
+  preview: 'Apperçu',
+  backToEditor: 'Revenir à l’éditeur',
+  Cancel: 'Annuler',
+  reset: 'Réinitialiser',
+  Save: 'Enregistrer',
 };
