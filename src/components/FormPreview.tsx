@@ -15,44 +15,44 @@ export function FormPreview() {
   const page = usePage();
 
   return (
-    <div>
-      <div>
-        <h1 className="text-blue-500 border-none font-bold text-4xl pl-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded">
-          {page.label}
-        </h1>
-      </div>
-      <div className="mt-5">
-        <Formik
-          initialValues={page.initialValues}
-          onSubmit={(values) => {
-            console.log(values);
-          }}
-        >
-          <FormikForm>
+    <Formik
+      initialValues={page.initialValues}
+      onSubmit={(values) => {
+        console.log(values);
+      }}
+    >
+      <FormikForm>
+        <fieldset>
+          <legend className="mb-5">
+            <h1 className="text-blue-500 border-none font-bold text-4xl pl-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded">
+              {page.label}
+            </h1>
+          </legend>
+          <div className="divide-y divide-gray-200">
             {page.publicContent.map((field) => (
               <FormPreviewField key={field.id} field={field} />
             ))}
+          </div>
+        </fieldset>
 
-            <div className="py-5">
-              <div className="flex justify-end">
-                <button
-                  type="button"
-                  className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <FormattedMessage id="Cancel" defaultMessage="Cancel" />
-                </button>
-                <button
-                  type="submit"
-                  className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <FormattedMessage id="Save" defaultMessage="Save" />
-                </button>
-              </div>
-            </div>
-          </FormikForm>
-        </Formik>
-      </div>
-    </div>
+        <div className="py-5">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <FormattedMessage id="Cancel" defaultMessage="Cancel" />
+            </button>
+            <button
+              type="submit"
+              className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <FormattedMessage id="Save" defaultMessage="Save" />
+            </button>
+          </div>
+        </div>
+      </FormikForm>
+    </Formik>
   );
 }
 
@@ -77,7 +77,7 @@ function FormPreviewField({ field }: { field: Field | Section }) {
 function FormPreviewSection({ field }: { field: Section }) {
   return (
     <fieldset>
-      <legend className="text-2xl font-bold flex-auto text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10">
+      <legend className="mb-4 text-2xl font-bold flex-auto text-blue-500 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10">
         {field.sectionIndex} {field.label}
       </legend>
       {field.description && (
@@ -85,9 +85,11 @@ function FormPreviewSection({ field }: { field: Section }) {
           {field.description}
         </div>
       )}
-      {field.publicContent.map((field) => (
-        <FormPreviewField key={field.id} field={field} />
-      ))}
+      <div className="divide-y divide-gray-200">
+        {field.publicContent.map((field) => (
+          <FormPreviewField key={field.id} field={field} />
+        ))}
+      </div>
     </fieldset>
   );
 }
@@ -184,7 +186,7 @@ function FormPreviewLabel({
     return null;
   }
   return (
-    <div className="flex flex-col flex-grow">
+    <div className="flex flex-col flex-grow pt-4 mb-4">
       <div className="flex">
         <label
           htmlFor={`for-${field.id}`}
