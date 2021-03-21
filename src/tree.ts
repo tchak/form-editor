@@ -353,15 +353,15 @@ export class Field {
     this.emitter.emit('patch', this);
   }
 
-  getValidator(values: Record<string, ConditionValue>) {
+  getValidator(values: Record<string, ConditionValue>, index?: number) {
     return (value: ConditionValue) => {
-      if (this.isRequired(values) && empty(value)) {
+      if (this.isRequired(values, index) && empty(value)) {
         return 'Required';
       }
     };
   }
 
-  isHidden(values: Record<string, ConditionValue>) {
+  isHidden(values: Record<string, ConditionValue>, index = 0) {
     const logicFields = this.siblingLogics.filter(({ logic }) =>
       logic.actions.find(
         ({ targetId, action }) => this.id == targetId && action == Action.hide
@@ -369,11 +369,12 @@ export class Field {
     );
     return computeLogics(
       logicFields.map(({ logic }) => logic),
-      values
+      values,
+      isMatrix(this.parent) ? [this.parent.id, index] : undefined
     );
   }
 
-  isRequired(values: Record<string, ConditionValue>) {
+  isRequired(values: Record<string, ConditionValue>, index = 0) {
     if (this.required) {
       return true;
     }
@@ -385,7 +386,8 @@ export class Field {
     );
     return computeLogics(
       logicFields.map(({ logic }) => logic),
-      values
+      values,
+      isMatrix(this.parent) ? [this.parent.id, index] : undefined
     );
   }
 
@@ -436,7 +438,7 @@ export class Section extends Field {
   get initialValues(): Record<string, ConditionValue> {
     return Object.fromEntries(
       this.publicFields.map((field) =>
-        isMatrix(field) ? [field.id, [field.initialValues]] : [field.id, '']
+        isMatrix(field) ? [field.id, []] : [field.id, '']
       )
     );
   }
@@ -492,38 +494,56 @@ export class Page extends Section {
 
 function computeLogics(
   logics: FieldLogic[],
-  values: Record<string, ConditionValue>
+  values: Record<string, ConditionValue>,
+  matrix?: [string, number]
 ) {
   return logics.find(({ conditions, operator }) =>
-    computeConditions(operator, conditions, values)
+    computeConditions(operator, conditions, values, matrix)
   );
 }
 
 function computeConditions(
   operator: LogicalOperator,
   conditions: ConditionExpression[],
-  values: Record<string, ConditionValue>
+  values: Record<string, ConditionValue>,
+  matrix?: [string, number]
 ): boolean {
   if (conditions.length > 1) {
     if (operator == LogicalOperator.AND) {
       return !conditions.find(
-        (condition) => computeCondition(condition, values) === false
+        (condition) => computeCondition(condition, values, matrix) === false
       );
     }
     return !!conditions.find((condition) =>
-      computeCondition(condition, values)
+      computeCondition(condition, values, matrix)
     );
   }
-  return computeCondition(conditions[0], values);
+  return computeCondition(conditions[0], values, matrix);
+}
+
+function getValue(
+  values: Record<string, ConditionValue>,
+  targetId: string,
+  matrix?: [string, number]
+) {
+  if (!matrix) {
+    return values[targetId];
+  }
+  const array = values[matrix[0]];
+  if (Array.isArray(array)) {
+    return (array as Record<string, ConditionValue>[])[matrix[1]][targetId];
+  }
+  throw new Error('Invalid value');
 }
 
 function computeCondition(
   condition: ConditionExpression,
-  values: Record<string, ConditionValue>
+  values: Record<string, ConditionValue>,
+  matrix?: [string, number]
 ) {
   return computeOperator(
     condition.operator,
-    values[condition.targetId],
+    getValue(values, condition.targetId, matrix),
     condition.value
   );
 }

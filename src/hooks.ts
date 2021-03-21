@@ -42,8 +42,29 @@ const defaultPage: FieldSchema = {
               type: FieldType.text,
             },
             {
+              id: 'age-enfant',
               label: 'Age',
               type: FieldType.number,
+            },
+            {
+              id: 'grande-question',
+              label: 'La grande question sur la vie',
+              type: FieldType.text,
+            },
+            {
+              label: '42',
+              type: FieldType.logic,
+              logic: {
+                conditions: [
+                  {
+                    operator: ConditionOperator.IS_NOT,
+                    targetId: 'age-enfant',
+                    value: 42,
+                  },
+                ],
+                operator: LogicalOperator.AND,
+                actions: [{ action: Action.hide, targetId: 'grande-question' }],
+              },
             },
           ],
         },

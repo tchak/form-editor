@@ -130,7 +130,7 @@ function FormPreviewText({ field, index }: { field: Field; index?: number }) {
       type={htmlTypeFromFieldType(field.type)}
       name={field.htmlInputName(index)}
       id={field.htmlInputId(index)}
-      validate={field.getValidator(values)}
+      validate={field.getValidator(values, index)}
       autoCorrect="off"
       autoComplete="off"
       spellCheck="false"
@@ -153,7 +153,7 @@ function FormPreviewCheckbox({
       type="checkbox"
       name={field.htmlInputName(index)}
       id={`for-${field.htmlInputId(index)}`}
-      validate={field.getValidator(values)}
+      validate={field.getValidator(values, index)}
     />
   );
 }
@@ -169,7 +169,7 @@ function FormPreviewRadio({ field, index }: { field: Field; index?: number }) {
             name={field.htmlInputName(index)}
             type="radio"
             value={option}
-            validate={field.getValidator(values)}
+            validate={field.getValidator(values, index)}
           />
           <span className="ml-2">{option}</span>
         </label>
@@ -208,7 +208,7 @@ function FormPreviewLabel({
   children: ReactNode;
 }) {
   const { values } = useFormikContext<Record<string, ConditionValue>>();
-  if (field.isHidden(values)) {
+  if (field.isHidden(values, index)) {
     return null;
   }
   return (
@@ -220,7 +220,7 @@ function FormPreviewLabel({
         >
           {field.sectionIndex} {field.label}
         </label>
-        {field.isRequired(values) && (
+        {field.isRequired(values, index) && (
           <span className="ml-2 font-medium text-2xl text-red-800">*</span>
         )}
       </div>
