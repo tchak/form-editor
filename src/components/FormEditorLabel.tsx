@@ -6,10 +6,10 @@ import {
   HiOutlineChevronUp,
   HiOutlineChevronDown,
 } from 'react-icons/hi';
-import { useDrag, useDrop } from 'react-dnd';
 
+import { useFieldDrag } from '../field-dnd';
 import { useAutosize } from '../autosize';
-import { Field, Section, isLogic, isSection } from '../tree';
+import { Field, isLogic, isSection } from '../tree';
 import { SettingsMenu, MenuButtonTooltip } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
 
@@ -63,34 +63,7 @@ export function FormEditorLabel({
     field.update({ description });
   };
 
-  const [{ isDragging }, drag, preview] = useDrag(
-    () => ({
-      type: 'Field',
-      item: field,
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging(),
-      }),
-      end(item, monitor) {
-        const didDrop = monitor.didDrop();
-        if (!didDrop) {
-        }
-      },
-    }),
-    [field.id]
-  );
-
-  const [, drop] = useDrop(
-    () => ({
-      accept: 'Field',
-      canDrop: () => false,
-      hover(item: Field | Section) {
-        if (item.id !== field.id) {
-          item.moveAfter(field);
-        }
-      },
-    }),
-    [field.id]
-  );
+  const [drag, drop, preview, { isDragging }] = useFieldDrag(field);
 
   return (
     <li ref={preview} className="-ml-40 mb-5 flex">

@@ -1,13 +1,13 @@
 import React from 'react';
-import { useDrop } from 'react-dnd';
 
+import { useSectionDrop } from '../field-dnd';
 import { usePage } from '../hooks';
 import { FormEditorField } from './FormEditorField';
 
 export function FormEditor() {
   const page = usePage();
+  const drop = useSectionDrop();
 
-  const [, drop] = useDrop(() => ({ accept: 'Field' }));
   return (
     <div>
       <div>
