@@ -72,7 +72,7 @@ const defaultPage: FieldSchema = {
               },
             },
             {
-              label: 'Est-il mageur ?',
+              label: 'Est-il majeur ?',
               type: FieldType.logic,
               logic: {
                 conditions: [
