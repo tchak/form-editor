@@ -14,7 +14,7 @@ import {
   isUnaryOperator,
 } from '../tree';
 
-export function FieldLogic({ field }: { field: Field }) {
+export function FormEditorLogic({ field }: { field: Field }) {
   return (
     <div>
       <ul>

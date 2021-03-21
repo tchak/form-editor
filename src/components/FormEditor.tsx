@@ -2,7 +2,7 @@ import React from 'react';
 import { useDrop } from 'react-dnd';
 
 import { usePage } from '../hooks';
-import { FormField } from './FormField';
+import { FormEditorField } from './FormEditorField';
 
 export function FormEditor() {
   const page = usePage();
@@ -21,13 +21,11 @@ export function FormEditor() {
           onChange={() => {}}
         />
       </div>
-      <div className="mt-5">
-        <ul className="pb-20" ref={drop}>
-          {page.content.map((field) => (
-            <FormField key={field.id} field={field} />
-          ))}
-        </ul>
-      </div>
+      <ul className="pb-20 mt-5" ref={drop}>
+        {page.content.map((field) => (
+          <FormEditorField key={field.id} field={field} />
+        ))}
+      </ul>
     </div>
   );
 }

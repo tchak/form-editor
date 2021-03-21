@@ -3,21 +3,21 @@ import { useDrop } from 'react-dnd';
 
 import { Field, Section } from '../tree';
 
-import { FormLabel } from './FormLabel';
-import { FormField } from './FormField';
+import { FormEditorLabel } from './FormEditorLabel';
+import { FormEditorField } from './FormEditorField';
 
-export function FormSection({ field }: { field: Section }) {
+export function FormEditorSection({ field }: { field: Section }) {
   const [, drop] = useDrop(() => ({ accept: 'Field' }));
 
   return (
-    <FormLabel field={field}>
+    <FormEditorLabel field={field}>
       <ul ref={drop}>
         {field.content.map((field) => (
-          <FormField key={field.id} field={field} />
+          <FormEditorField key={field.id} field={field} />
         ))}
         <SectionInsert field={field} />
       </ul>
-    </FormLabel>
+    </FormEditorLabel>
   );
 }
 

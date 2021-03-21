@@ -13,7 +13,7 @@ import { Field, Section, isLogic, isSection } from '../tree';
 import { SettingsMenu } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
 
-export function FormLabel({
+export function FormEditorLabel({
   field,
   children,
 }: {
