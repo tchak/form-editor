@@ -6,26 +6,9 @@ import {
   ConnectDropTarget,
 } from 'react-dnd';
 
-import { Field, Section } from './tree';
+import { Field } from './tree';
 
 const DragItemType = 'Field';
-
-export function useSectionInsertDrop(field: Section) {
-  const [, drop] = useDrop(
-    () => ({
-      accept: DragItemType,
-      canDrop(item: Field | Section) {
-        return item != field && !field.content.includes(item);
-      },
-      drop(item: Field | Section) {
-        field.insert(item, field.content.length);
-      },
-    }),
-    [field.id]
-  );
-
-  return drop;
-}
 
 export function useFieldDrag(
   field: Field
@@ -33,9 +16,9 @@ export function useFieldDrag(
   ConnectDragSource,
   ConnectDropTarget,
   ConnectDragPreview,
-  { isDragging: boolean }
+  { isDragging: boolean; isOver: boolean }
 ] {
-  const [props, drag, preview] = useDrag(
+  const [{ isDragging }, drag, preview] = useDrag(
     () => ({
       type: DragItemType,
       item: field,
@@ -46,7 +29,7 @@ export function useFieldDrag(
     [field.id]
   );
 
-  const [, drop] = useDrop(
+  const [{ isOver }, drop] = useDrop(
     () => ({
       accept: DragItemType,
       canDrop(item: Field) {
@@ -55,9 +38,12 @@ export function useFieldDrag(
       drop(item: Field) {
         item.moveAfter(field);
       },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+      }),
     }),
     [field.id]
   );
 
-  return [drag, drop, preview, props];
+  return [drag, drop, preview, { isDragging, isOver }];
 }

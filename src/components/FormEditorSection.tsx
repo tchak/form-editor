@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { useSectionInsertDrop } from '../field-dnd';
 import { Section } from '../tree';
 
 import { FormEditorLabel } from './FormEditorLabel';
@@ -25,12 +24,6 @@ export function FormEditorSection({ field }: { field: Section }) {
           </button>
         </div>
       )}
-      <SectionInsert field={field} />
     </FormEditorLabel>
   );
-}
-
-function SectionInsert({ field }: { field: Section }) {
-  const drop = useSectionInsertDrop(field);
-  return <div className="p-2" ref={drop}></div>;
 }
