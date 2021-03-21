@@ -53,7 +53,7 @@ function RadioInput({
   const focusRef = useFocused(focused);
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center group">
       <input
         radioGroup={group}
         type="radio"
@@ -75,7 +75,7 @@ function RadioInput({
         }}
       />
       <button
-        className="hover:text-red-600 text-lg opacity-0 hover:opacity-100 p-1 ml-2"
+        className="text-red-600 text-lg opacity-0 group-hover:opacity-100 p-1 ml-2"
         onClick={() => removeOption()}
       >
         <HiOutlineMinus />

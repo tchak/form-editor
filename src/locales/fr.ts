@@ -39,4 +39,11 @@ export const messages = {
   Cancel: 'Annuler',
   reset: 'Réinitialiser',
   Save: 'Enregistrer',
+
+  addFieldAfter: 'Ajouter un champ ou une section en dessous',
+  deleteField: 'Supprimer le champ',
+  moveUp: 'Déplacer le champ vers le haut',
+  moveDown: 'Déplacer le champ vers le bas',
+  move: 'Déplacer',
+  fieldSettigs: 'Configuration du champ',
 };

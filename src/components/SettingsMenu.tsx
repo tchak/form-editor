@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { HiOutlineCog } from 'react-icons/hi';
 import { Menu, Switch } from '@headlessui/react';
 import { FormattedMessage, useIntl } from 'react-intl';
+import { Tooltip } from '@reach/tooltip';
 
 import {
   ConditionOperator,
@@ -11,6 +12,29 @@ import {
   Section,
   Action,
 } from '../tree';
+
+export function MenuButtonTooltip({
+  children,
+  label,
+}: {
+  children: ReactNode;
+  label: {
+    id: string;
+    defaultMessage: string;
+  };
+}) {
+  const intl = useIntl();
+  const message = intl.formatMessage(label);
+
+  return (
+    <Tooltip
+      label={message}
+      className="rounded bg-gray-800 text-white p-2 px-3 border-none"
+    >
+      {children}
+    </Tooltip>
+  );
+}
 
 export function SettingsMenu({ field }: { field: Field | Section }) {
   const intl = useIntl();
@@ -53,10 +77,14 @@ export function SettingsMenu({ field }: { field: Field | Section }) {
   return (
     <Menu>
       <div className="relative inline-block text-left">
-        <Menu.Button className="hover:bg-gray-200 rounded p-1 h-6 w-6">
-          <span className="sr-only">Open options</span>
-          <HiOutlineCog />
-        </Menu.Button>
+        <MenuButtonTooltip
+          label={{ id: 'fieldSettigs', defaultMessage: 'Field settings' }}
+        >
+          <Menu.Button className="hover:bg-gray-200 rounded flex items-center justify-center h-6 w-6">
+            <span className="sr-only">Open options</span>
+            <HiOutlineCog />
+          </Menu.Button>
+        </MenuButtonTooltip>
 
         <Menu.Items className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
           <div className="py-1" role="none">
@@ -127,7 +155,6 @@ function Toggle({
         } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
       >
         <span
-          aria-hidden="true"
           className={`${
             checked ? 'translate-x-5' : 'translate-x-0'
           } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}

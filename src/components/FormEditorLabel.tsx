@@ -10,8 +10,33 @@ import { useDrag, useDrop } from 'react-dnd';
 
 import { useAutosize } from '../autosize';
 import { Field, Section, isLogic, isSection } from '../tree';
-import { SettingsMenu } from './SettingsMenu';
+import { SettingsMenu, MenuButtonTooltip } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
+
+function SideMenuButton({
+  children,
+  tooltip,
+  onClick,
+}: {
+  children: ReactNode;
+  tooltip: {
+    id: string;
+    defaultMessage: string;
+  };
+  onClick: () => void;
+}) {
+  return (
+    <MenuButtonTooltip label={tooltip}>
+      <button
+        type="button"
+        className="hover:bg-gray-200 rounded flex items-center justify-center h-6 w-6"
+        onClick={onClick}
+      >
+        {children}
+      </button>
+    </MenuButtonTooltip>
+  );
+}
 
 export function FormEditorLabel({
   field,
@@ -68,47 +93,57 @@ export function FormEditorLabel({
   );
 
   return (
-    <li ref={preview} className="-ml-40 mb-5 flex group">
+    <li ref={preview} className="-ml-40 mb-5 flex">
       <div
         ref={drop}
-        className="flex justify-end text-lg text-gray-600 w-40 pt-3 opacity-0 group-hover:opacity-100 transition duration-150 ease-in-out"
+        className="flex justify-end text-lg text-gray-600 w-40 pt-3 pr-3 transition duration-150 ease-in-out"
       >
         {!field.first && (
-          <button
-            type="button"
-            className="hover:bg-gray-200 rounded p-1 h-6 w-6"
+          <SideMenuButton
+            tooltip={{
+              id: 'moveUp',
+              defaultMessage: 'Move Field up',
+            }}
             onClick={() => field.moveUp()}
           >
             <HiOutlineChevronUp />
-          </button>
+          </SideMenuButton>
         )}
         {!field.last && (
-          <button
-            type="button"
-            className="hover:bg-gray-200 rounded p-1 h-6 w-6"
+          <SideMenuButton
+            tooltip={{
+              id: 'moveDown',
+              defaultMessage: 'Move Field down',
+            }}
             onClick={() => field.moveDown()}
           >
             <HiOutlineChevronDown />
-          </button>
+          </SideMenuButton>
         )}
+
         {!isLogic(field) && <SettingsMenu field={field} />}
-        <button
-          type="button"
-          className="hover:bg-gray-200 rounded p-1 h-6 w-6"
+
+        <SideMenuButton
+          tooltip={{ id: 'deleteField', defaultMessage: 'Remove the Field' }}
           onClick={() => field.remove()}
         >
           <HiOutlineTrash />
-        </button>
+        </SideMenuButton>
 
-        <button
-          type="button"
-          className="hover:bg-gray-200 rounded p-1 h-6 w-6"
+        <SideMenuButton
+          tooltip={{
+            id: 'addFieldAfter',
+            defaultMessage: 'Add a Field after',
+          }}
           onClick={openAddField}
         >
           <HiOutlinePlus />
-        </button>
+        </SideMenuButton>
 
-        <div ref={drag} className="hover:bg-gray-200 rounded p-1 h-6 w-6">
+        <div
+          ref={drag}
+          className="hover:bg-gray-200 rounded flex items-center justify-center h-6 w-6"
+        >
           <HiOutlineDotsVertical />
         </div>
 
