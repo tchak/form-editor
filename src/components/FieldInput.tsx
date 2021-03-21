@@ -1,6 +1,8 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react';
 import { HiOutlineMinus } from 'react-icons/hi';
+import composeRefs from '@seznam/compose-react-refs';
 
+import { useAutosize } from '../autosize';
 import { Field, FieldType } from '../tree';
 import { FieldLogic } from './FieldLogic';
 
@@ -11,6 +13,7 @@ export function FieldInput({ field }: { field: Field }) {
   const saveOptions = (index: number, option: string) => {
     const options = [...field.options];
     options.splice(index, 1, option);
+    focusIndexRef.current = undefined;
     setOptions(options);
     field.update({ options });
   };
@@ -111,7 +114,8 @@ function RadioInput({
   updateOption: (value: string) => void;
   removeOption: () => void;
 }) {
-  const [ref, setFocus] = useFocus();
+  const autosizeRef = useAutosize();
+  const [focusRef, setFocus] = useFocus();
   useEffect(() => {
     if (focused()) {
       setFocus();
@@ -129,7 +133,7 @@ function RadioInput({
         className="shadow-sm focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
       />
       <input
-        ref={ref}
+        ref={composeRefs(autosizeRef, focusRef)}
         type="text"
         className="ml-2 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
         value={option}
