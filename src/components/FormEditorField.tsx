@@ -11,7 +11,9 @@ export function FormEditorField({ field }: { field: Field | Section }) {
   } else {
     return (
       <FormEditorLabel field={field}>
-        <FormEditorInput field={field} />
+        <div className="mt-4">
+          <FormEditorInput field={field} />
+        </div>
       </FormEditorLabel>
     );
   }

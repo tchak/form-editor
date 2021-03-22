@@ -11,7 +11,7 @@ import composeRefs from '@seznam/compose-react-refs';
 
 import { useFieldDrag } from '../field-dnd';
 import { useAutosize } from '../autosize';
-import { Field, isLogic, isSection } from '../tree';
+import { Field, isLogic, isSection, isMatrix } from '../tree';
 import { SettingsMenu, MenuButtonTooltip } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
 import { useFocus, useHoverOrFocusWithin } from './hooks';
@@ -162,23 +162,31 @@ export function FormEditorLabel({
       </div>
       <div
         className={`${
-          isSection(field) ? 'mt-4' : 'mt-2'
+          isSection(field) ? 'mt-8' : 'mt-4'
         } flex flex-col flex-grow`}
       >
         <div className="flex">
           {isSection(field) && !field.matrix ? (
             <span
               className={`${
-                isSection(field) ? 'text-2xl font-bold' : 'font-semibold'
-              } flex-no-grow text-blue-500 border-none pr-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
+                isMatrix(field)
+                  ? 'text-lg text-blue-500'
+                  : isSection(field)
+                  ? 'text-xl text-blue-500'
+                  : ''
+              } font-semibold flex-no-grow border-none pr-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
             >
               {field.sectionIndex}
             </span>
           ) : null}
           <input
             className={`${
-              isSection(field) ? 'text-2xl font-bold' : 'font-semibold'
-            } text-blue-500 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
+              isMatrix(field)
+                ? 'text-lg text-blue-500'
+                : isSection(field)
+                ? 'text-xl text-blue-500'
+                : ''
+            } font-semibold border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
             autoCorrect="off"
             autoComplete="off"
             spellCheck="false"
@@ -194,7 +202,7 @@ export function FormEditorLabel({
 
         {hasDescription && (
           <textarea
-            className="mt-1 text-black border-none p-0 text-xs focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
+            className="mt-2 text-sm text-gray-700 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
             rows={1}
             value={description ?? ''}
             onChange={({ currentTarget: { value } }) => saveDescription(value)}

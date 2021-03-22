@@ -10,7 +10,7 @@ export function FormEditor() {
     <div>
       <div>
         <input
-          className="text-blue-500 border-none font-bold text-4xl pl-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded"
+          className="text-blue-500 border-none font-bold text-3xl p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded"
           type="text"
           value={page.label}
           autoCorrect="off"
@@ -19,7 +19,7 @@ export function FormEditor() {
           onChange={() => {}}
         />
       </div>
-      <ul className="pb-20 mt-5">
+      <ul>
         {page.content.map((field) => (
           <FormEditorField key={field.id} field={field} />
         ))}
