@@ -39,7 +39,7 @@ export function useFieldDrag(
         item.moveAfter(field);
       },
       collect: (monitor) => ({
-        isOver: monitor.isOver(),
+        isOver: monitor.isOver() && monitor.getItem<Field>() != field,
       }),
     }),
     [field.id]

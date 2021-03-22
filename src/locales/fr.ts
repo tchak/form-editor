@@ -47,6 +47,7 @@ export const messages = {
 
   addFieldAfter: 'Ajouter un champ ou une section en dessous',
   deleteField: 'Supprimer le champ',
+  editFieldLabel: 'Modifier le libellé du champ',
   moveUp: 'Déplacer le champ vers le haut',
   moveDown: 'Déplacer le champ vers le bas',
   move: 'Déplacer',

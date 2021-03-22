@@ -68,15 +68,21 @@ export function FormEditorLabel({
     field.update({ description });
   };
 
-  const [drag, drop, preview, { isDragging }] = useFieldDrag(field);
+  const [drag, drop, preview, { isDragging, isOver }] = useFieldDrag(field);
 
   return (
-    <li {...hoverProps} ref={preview} className="-ml-40 flex">
+    <li
+      {...hoverProps}
+      ref={preview}
+      className={`-ml-40 flex bg-white rounded-md ${
+        isOver ? 'ring ring-blue-200 ring-offset-2' : ''
+      } ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+    >
       <div
         ref={drop}
         className={`${isSection(field) ? 'pt-5' : 'pt-3'} ${
           isHovered ? 'opacity-100' : 'opacity-0'
-        } flex justify-end text-lg text-gray-600 w-40 pr-3 transition duration-150 ease-in-out`}
+        } flex justify-end w-40 pr-3 transition duration-150 ease-in-out`}
       >
         {!field.first && (
           <SideMenuButton
@@ -113,7 +119,7 @@ export function FormEditorLabel({
         <SideMenuButton
           tooltip={{
             id: 'editFieldLabel',
-            defaultMessage: 'Modifier le libellé',
+            defaultMessage: 'Edit Field label',
           }}
           onClick={setLabelFocus}
         >
@@ -157,7 +163,7 @@ export function FormEditorLabel({
       <div
         className={`${
           isSection(field) ? 'mt-4' : 'mt-2'
-        } flex flex-col flex-grow ${isDragging ? 'opacity-50' : 'opacity-100'}`}
+        } flex flex-col flex-grow`}
       >
         <div className="flex">
           {isSection(field) && !field.matrix ? (
