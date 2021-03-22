@@ -41,7 +41,7 @@ export function FormPreview() {
           ))}
         </fieldset>
 
-        <div className="py-5">
+        <div className="py-10">
           <div className="flex justify-end">
             <button
               type="button"
