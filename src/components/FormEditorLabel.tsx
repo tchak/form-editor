@@ -14,7 +14,7 @@ import { useAutosize } from '../autosize';
 import { Field, isLogic, isSection } from '../tree';
 import { SettingsMenu, MenuButtonTooltip } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
-import { useFocus } from './hooks';
+import { useFocus, useHoverOrFocusWithin } from './hooks';
 
 function SideMenuButton({
   children,
@@ -48,6 +48,7 @@ export function FormEditorLabel({
   field: Field;
   children: ReactNode;
 }) {
+  const { isHovered, hoverProps } = useHoverOrFocusWithin();
   const [focusLabelRef, setLabelFocus] = useFocus();
   const autosizeLabelRef = useAutosize();
   const descriptionRef = useAutosize<HTMLTextAreaElement>();
@@ -70,11 +71,11 @@ export function FormEditorLabel({
   const [drag, drop, preview, { isDragging }] = useFieldDrag(field);
 
   return (
-    <li ref={preview} className="-ml-40 flex">
+    <li {...hoverProps} ref={preview} className="-ml-40 flex">
       <div
         ref={drop}
-        className={`${
-          isSection(field) ? 'pt-5' : 'pt-3'
+        className={`${isSection(field) ? 'pt-5' : 'pt-3'} ${
+          isHovered ? 'opacity-100' : 'opacity-0'
         } flex justify-end text-lg text-gray-600 w-40 pr-3 transition duration-150 ease-in-out`}
       >
         {!field.first && (
@@ -107,6 +108,16 @@ export function FormEditorLabel({
           onClick={() => field.remove()}
         >
           <HiOutlineTrash />
+        </SideMenuButton>
+
+        <SideMenuButton
+          tooltip={{
+            id: 'editFieldLabel',
+            defaultMessage: 'Modifier le libellé',
+          }}
+          onClick={setLabelFocus}
+        >
+          <HiOutlinePencil />
         </SideMenuButton>
 
         <SideMenuButton
@@ -148,7 +159,7 @@ export function FormEditorLabel({
           isSection(field) ? 'mt-4' : 'mt-2'
         } flex flex-col flex-grow ${isDragging ? 'opacity-50' : 'opacity-100'}`}
       >
-        <div className="flex group">
+        <div className="flex">
           {isSection(field) && !field.matrix ? (
             <span
               className={`${
@@ -173,12 +184,6 @@ export function FormEditorLabel({
           {field.required && (
             <span className="ml-2 font-medium text-2xl text-red-800">*</span>
           )}
-          <button
-            className="ml-2 opacity-0 group-hover:opacity-100"
-            onClick={setLabelFocus}
-          >
-            <HiOutlinePencil />
-          </button>
         </div>
 
         {hasDescription && (
