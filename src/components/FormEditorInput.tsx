@@ -13,7 +13,7 @@ export function FormEditorInput({ field }: { field: Field }) {
           id={field.id}
           tabIndex={-1}
           readOnly
-          className="text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
+          className="w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 block sm:text-sm border-gray-300 rounded-md"
         />
       );
     case FieldType.longtext:
@@ -22,7 +22,7 @@ export function FormEditorInput({ field }: { field: Field }) {
           id={field.id}
           tabIndex={-1}
           readOnly
-          className="text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
+          className="w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 block sm:text-sm border-gray-300 rounded-md"
           rows={3}
         ></textarea>
       );
@@ -44,7 +44,7 @@ export function FormEditorInput({ field }: { field: Field }) {
           type="number"
           tabIndex={-1}
           readOnly
-          className="text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
+          className="w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 block sm:text-sm border-gray-300 rounded-md"
         />
       );
     case FieldType.radio:

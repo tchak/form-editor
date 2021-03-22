@@ -4,6 +4,7 @@ import composeRefs from '@seznam/compose-react-refs';
 
 import { Field } from '../tree';
 import { useAutosize } from '../autosize';
+import { useFocus } from './hooks';
 
 export function FormEditorRadio({ field }: { field: Field }) {
   const {
@@ -82,11 +83,6 @@ function RadioInput({
       </button>
     </div>
   );
-}
-
-function useFocus(): [RefObject<HTMLInputElement>, () => void] {
-  const ref = useRef<HTMLInputElement>(null);
-  return [ref, () => ref.current?.focus()];
 }
 
 function useFocused(focused: () => boolean): RefObject<HTMLInputElement> {

@@ -97,18 +97,87 @@ function FormPreviewSection({
   index?: number;
 }) {
   return (
-    <fieldset>
-      <legend className="mb-4 text-2xl font-bold flex-auto text-blue-500">
+    <fieldset className="mt-4">
+      <legend className="text-2xl font-bold flex-auto text-blue-500">
         {field.sectionIndex} {field.label}
       </legend>
       {field.description && (
-        <div className="mb-2 text-xs">{field.description}</div>
+        <div className="mt-1 text-xs">{field.description}</div>
       )}
 
       {field.publicContent.map((field) => (
         <FormPreviewField key={field.id} field={field} index={index} />
       ))}
     </fieldset>
+  );
+}
+
+function FormPreviewLabel({
+  field,
+  index,
+  children,
+}: {
+  field: Field;
+  index?: number;
+  children: ReactNode;
+}) {
+  const { values } = useFormikContext<Record<string, ConditionValue>>();
+  if (field.isHidden(values, index)) {
+    return null;
+  }
+  return (
+    <div className="mt-2 flex flex-col flex-grow">
+      <div className="flex">
+        <label
+          htmlFor={field.htmlInputId(index)}
+          className="font-semibold text-blue-500"
+        >
+          {field.sectionIndex} {field.label}
+        </label>
+        {field.isRequired(values, index) && (
+          <span className="ml-2 font-medium text-2xl text-red-800">*</span>
+        )}
+      </div>
+
+      {field.description && (
+        <div className="mt-1 text-xs">{field.description}</div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+function FormPreviewMatrix({ field }: { field: Section }) {
+  return (
+    <FieldArray name={field.htmlInputName()}>
+      {({ push, form }) => (
+        <fieldset className="mt-2">
+          <legend className="text-2xl font-bold flex-auto text-blue-500">
+            {field.label}
+          </legend>
+          {field.description && (
+            <div className="mt-1 text-xs">{field.description}</div>
+          )}
+          {field.matrixValues(form.values).map((_, index) => (
+            <div key={index}>
+              {field.publicContent.map((field) => (
+                <FormPreviewField key={field.id} index={index} field={field} />
+              ))}
+            </div>
+          ))}
+          <div className="mt-2 flex justify-start">
+            <button
+              type="button"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={() => push(field.initialValues)}
+            >
+              <HiOutlinePlusCircle className="-ml-0.5 mr-2 h-4 w-4" />
+              {field.matrixAddLabel}
+            </button>
+          </div>
+        </fieldset>
+      )}
+    </FieldArray>
   );
 }
 
@@ -125,7 +194,7 @@ function FormPreviewText({ field, index }: { field: Field; index?: number }) {
   const { values } = useFormikContext<Record<string, ConditionValue>>();
   return (
     <FormikField
-      className="w-full text-sm shadow-sm rounded-t border-t-0 border-l-0 border-r-0 border-2 border-black focus:border-black bg-gray-200 text-black placeholder-black focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none"
+      className="w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 block sm:text-sm border-gray-300 rounded-md"
       as={asFromFieldType(field.type)}
       type={htmlTypeFromFieldType(field.type)}
       name={field.htmlInputName(index)}
@@ -196,73 +265,4 @@ function asFromFieldType(type: FieldType): string {
     default:
       return 'input';
   }
-}
-
-function FormPreviewLabel({
-  field,
-  index,
-  children,
-}: {
-  field: Field;
-  index?: number;
-  children: ReactNode;
-}) {
-  const { values } = useFormikContext<Record<string, ConditionValue>>();
-  if (field.isHidden(values, index)) {
-    return null;
-  }
-  return (
-    <div className="flex flex-col flex-grow pt-4 mb-4">
-      <div className="flex">
-        <label
-          htmlFor={field.htmlInputId(index)}
-          className="font-semibold text-blue-500 mb-1"
-        >
-          {field.sectionIndex} {field.label}
-        </label>
-        {field.isRequired(values, index) && (
-          <span className="ml-2 font-medium text-2xl text-red-800">*</span>
-        )}
-      </div>
-
-      {field.description && (
-        <div className="mb-2 text-xs">{field.description}</div>
-      )}
-      {children}
-    </div>
-  );
-}
-
-function FormPreviewMatrix({ field }: { field: Section }) {
-  return (
-    <FieldArray name={field.htmlInputName()}>
-      {({ push, form }) => (
-        <fieldset>
-          <legend className="mb-4 text-2xl font-bold flex-auto text-blue-500">
-            {field.label}
-          </legend>
-          {field.description && (
-            <div className="mb-2 text-xs">{field.description}</div>
-          )}
-          {field.matrixValues(form.values).map((_, index) => (
-            <div key={index}>
-              {field.publicContent.map((field) => (
-                <FormPreviewField key={field.id} index={index} field={field} />
-              ))}
-            </div>
-          ))}
-          <div className="flex justify-start">
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              onClick={() => push(field.initialValues)}
-            >
-              <HiOutlinePlusCircle className="-ml-0.5 mr-2 h-4 w-4" />
-              {field.matrixAddLabel}
-            </button>
-          </div>
-        </fieldset>
-      )}
-    </FieldArray>
-  );
 }

@@ -5,13 +5,16 @@ import {
   HiOutlinePlus,
   HiOutlineChevronUp,
   HiOutlineChevronDown,
+  HiOutlinePencil,
 } from 'react-icons/hi';
+import composeRefs from '@seznam/compose-react-refs';
 
 import { useFieldDrag } from '../field-dnd';
 import { useAutosize } from '../autosize';
 import { Field, isLogic, isSection } from '../tree';
 import { SettingsMenu, MenuButtonTooltip } from './SettingsMenu';
 import { AddFieldModal } from './AddFieldModal';
+import { useFocus } from './hooks';
 
 function SideMenuButton({
   children,
@@ -45,7 +48,8 @@ export function FormEditorLabel({
   field: Field;
   children: ReactNode;
 }) {
-  const labelRef = useAutosize();
+  const [focusLabelRef, setLabelFocus] = useFocus();
+  const autosizeLabelRef = useAutosize();
   const descriptionRef = useAutosize<HTMLTextAreaElement>();
   const [showAddField, setShowAddField] = useState(false);
   const [label, setLabel] = useState(field.label);
@@ -66,7 +70,7 @@ export function FormEditorLabel({
   const [drag, drop, preview, { isDragging }] = useFieldDrag(field);
 
   return (
-    <li ref={preview} className="-ml-40 mb-5 flex">
+    <li ref={preview} className="-ml-40 flex">
       <div
         ref={drop}
         className="flex justify-end text-lg text-gray-600 w-40 pt-3 pr-3 transition duration-150 ease-in-out"
@@ -138,16 +142,16 @@ export function FormEditorLabel({
         />
       </div>
       <div
-        className={`flex flex-col flex-grow ${
-          isDragging ? 'opacity-50' : 'opacity-100'
-        }`}
+        className={`${
+          isSection(field) ? 'mt-4' : 'mt-2'
+        } flex flex-col flex-grow ${isDragging ? 'opacity-50' : 'opacity-100'}`}
       >
-        <div className="flex">
-          {isSection(field) ? (
+        <div className="flex group">
+          {isSection(field) && !field.matrix ? (
             <span
               className={`${
                 isSection(field) ? 'text-2xl font-bold' : 'font-semibold'
-              } flex-no-grow text-blue-500 border-none pr-1 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
+              } flex-no-grow text-blue-500 border-none pr-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
             >
               {field.sectionIndex}
             </span>
@@ -155,11 +159,11 @@ export function FormEditorLabel({
           <input
             className={`${
               isSection(field) ? 'text-2xl font-bold' : 'font-semibold'
-            } text-blue-500 border-none p-0 mb-1 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
+            } text-blue-500 border-none p-0 focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10`}
             autoCorrect="off"
             autoComplete="off"
             spellCheck="false"
-            ref={labelRef}
+            ref={composeRefs(autosizeLabelRef, focusLabelRef)}
             type="text"
             value={label}
             onChange={({ currentTarget: { value } }) => saveLabel(value)}
@@ -167,11 +171,17 @@ export function FormEditorLabel({
           {field.required && (
             <span className="ml-2 font-medium text-2xl text-red-800">*</span>
           )}
+          <button
+            className="ml-2 opacity-0 group-hover:opacity-100"
+            onClick={setLabelFocus}
+          >
+            <HiOutlinePencil />
+          </button>
         </div>
 
         {hasDescription && (
           <textarea
-            className="text-black border-none p-0 mb-2 text-xs focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
+            className="mt-1 text-black border-none p-0 text-xs focus:ring focus:ring-blue-500 focus:ring-offset-2 outline-none rounded focus:z-10"
             rows={1}
             value={description ?? ''}
             onChange={({ currentTarget: { value } }) => saveDescription(value)}
