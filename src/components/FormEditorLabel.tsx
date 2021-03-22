@@ -73,7 +73,9 @@ export function FormEditorLabel({
     <li ref={preview} className="-ml-40 flex">
       <div
         ref={drop}
-        className="flex justify-end text-lg text-gray-600 w-40 pt-3 pr-3 transition duration-150 ease-in-out"
+        className={`${
+          isSection(field) ? 'pt-5' : 'pt-3'
+        } flex justify-end text-lg text-gray-600 w-40 pr-3 transition duration-150 ease-in-out`}
       >
         {!field.first && (
           <SideMenuButton
